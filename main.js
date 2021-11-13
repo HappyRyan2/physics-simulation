@@ -1,19 +1,22 @@
-const app = {
-	FPS: 60,
-	physicsWorld: new PhysicsWorld(),
-
-	display: () => {
-
-	},
-	update: () => {
-		app.physicsWorld.update();
-	},
-
-	initialize: () => {
-		window.setInterval(() => {
-			app.update();
-			app.display();
-		}, 1000 / app.FPS);
+class App {
+	constructor() {
+		this.physicsWorld = new PhysicsWorld();
+		this.fps = 60;
 	}
-};
+	initialize() {
+		window.setInterval(() => {
+			this.update();
+			this.display();
+		}, 1000 / this.fps);
+	}
+
+	display() {
+
+	}
+	update() {
+		this.physicsWorld.update();
+	}
+}
+
+const app = new App();
 app.initialize();
