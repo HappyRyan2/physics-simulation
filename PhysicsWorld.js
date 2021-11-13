@@ -1,9 +1,17 @@
 class PhysicsWorld {
-	constructor(objects) {
+	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
+		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
+	}
+
+	applyGravity() {
+		for(const obj of this.objects) {
+			obj.applyForce(new Vector(0, this.gravitationalAcceleration));
+		}
 	}
 
 	update() {
+		this.applyGravity();
 		for(const obj of this.objects) {
 			obj.update();
 		}
