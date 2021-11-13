@@ -1,5 +1,5 @@
 class PhysicsObject {
-	constructor(shape) {
+	constructor(shape, mass) {
 		this.shape = shape;
 		this.position = new Vector();
 		this.velocity = new Vector();
@@ -7,6 +7,9 @@ class PhysicsObject {
 		this.rotation = 0;
 		this.angularVelocity = 0;
 		this.angularAcceleration = 0;
+		this.inertialMass = mass;
+		this.gravitationalMass = mass;
+		this.rotationalInertia = mass; // TODO: add calculations for rotational inertia
 	}
 
 	update() {
@@ -15,5 +18,14 @@ class PhysicsObject {
 
 		this.rotation += this.angularVelocity;
 		this.angularVelocity += this.angularAcceleration;
+	}
+
+	applyForce(force, position = this.position) {
+		this.acceleration = this.acceleration.add(force.divide(this.inertialMass));
+		const TO_RADIANS = Math.PI / 180;
+		let torque = force.magnitude;
+		torque *= position.subtract(this.position).magnitude;
+		torque *= Math.sin(TO_RADIANS * (force.angle - position.angle));
+		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
 }
