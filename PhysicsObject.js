@@ -19,6 +19,12 @@ class PhysicsObject {
 		this.rotation += this.angularVelocity;
 		this.angularVelocity += this.angularAcceleration;
 	}
+	display(c) {
+		c.fillStyle = "black";
+		c.translate(this.position.x, this.position.y);
+		c.rotate(this.rotation);
+		this.shape.display(c);
+	}
 
 	applyForce(force, position = this.position) {
 		this.acceleration = this.acceleration.add(force.divide(this.inertialMass));

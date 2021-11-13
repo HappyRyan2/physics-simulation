@@ -2,8 +2,10 @@ class App {
 	constructor() {
 		this.physicsWorld = new PhysicsWorld();
 		this.fps = 60;
+		this.canvasIO = new CanvasIO();
 	}
 	initialize() {
+		this.canvasIO.activate();
 		window.setInterval(() => {
 			this.update();
 			this.display();
@@ -11,7 +13,7 @@ class App {
 	}
 
 	display() {
-
+		this.physicsWorld.display(this.canvasIO.ctx);
 	}
 	update() {
 		this.physicsWorld.update();
