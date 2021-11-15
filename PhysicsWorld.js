@@ -9,11 +9,20 @@ class PhysicsWorld {
 			obj.applyForce(new Vector(0, this.gravitationalAcceleration));
 		}
 	}
+	applyCollisions() {
+
+	}
 
 	update() {
 		this.applyGravity();
 		for(const obj of this.objects) {
-			obj.update();
+			obj.updateVelocity();
+			obj.updatePosition();
+		}
+		this.applyCollisions();
+		for(const obj of this.objects) {
+			obj.updateVelocity();
+			obj.updatePosition();
 		}
 	}
 

@@ -12,12 +12,20 @@ class PhysicsObject {
 		this.rotationalInertia = mass; // TODO: add calculations for rotational inertia
 	}
 
-	update() {
-		this.position = this.position.add(this.velocity);
+	updateVelocity() {
 		this.velocity = this.velocity.add(this.acceleration);
-
-		this.rotation += this.angularVelocity;
 		this.angularVelocity += this.angularAcceleration;
+		this.acceleration = new Vector();
+		this.angularAcceleration = 0;
+	}
+	updatePosition() {
+		this.position = this.position.add(this.velocity);
+		this.rotation += this.angularVelocity;
+	}
+
+	update() {
+		this.updateVelocity();
+		this.updatePosition();
 	}
 	display(c) {
 		c.fillStyle = "black";
