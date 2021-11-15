@@ -15,6 +15,13 @@ class Line extends Shape {
 			this.endpoint2 = new Vector(segment.endpoint2);
 		}
 	}
+
+	slope() {
+		return (this.endpoint1.y - this.endpoint2.y) / (this.endpoint1.x - this.endpoint2.x);
+	}
+	yIntercept() {
+		return (-this.slope() * this.endpoint1.x) + this.endpoint1.y;
+	}
 }
 
 testing.addUnit("Line constructor", {
@@ -36,5 +43,19 @@ testing.addUnit("Line constructor", {
 		const line = new Line(segment);
 		expect(line.endpoint1).toEqual(new Vector(1, 2));
 		expect(line.endpoint2).toEqual(new Vector(3, 4));
+	}
+});
+testing.addUnit("Line.slope()", {
+	"correctly calculates the slope of the line": () => {
+		const line = new Line(5, 6, 105, 106);
+		const slope = line.slope();
+		expect(slope).toEqual(1);
+	}
+});
+testing.addUnit("Line.yIntercept()", {
+	"correctly calculates the y-intercept of the line": () => {
+		const line = new Line(5, 6, 105, 106);
+		const intercept = line.yIntercept();
+		expect(intercept).toEqual(1);
 	}
 });
