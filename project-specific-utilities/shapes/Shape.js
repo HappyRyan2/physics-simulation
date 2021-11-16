@@ -70,6 +70,10 @@ class Shape {
 		if(polygon.containsPoint(line.endpoint1)) { return true; }
 		return polygon.edges().some(e => Shape.lineIntersectsSegment(line, e));
 	}
+	static polygonIntersectsSegment(polygon, segment) {
+		if(polygon.containsPoint(segment.endpoint1)) { return true; }
+		return polygon.edges().some(e => Shape.segmentIntersectsSegment(e, segment));
+	}
 	static segmentIntersectsSegment(segment1, segment2) {
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return false; }
@@ -322,6 +326,32 @@ testing.addUnit("Shape.segmentIntersectsSegment()", {
 		const segment2 = new Segment(2, 0, 3, 0);
 		const intersect = Shape.segmentIntersectsSegment(segment1, segment2);
 		expect(intersect).toEqual(false);
+	}
+});
+testing.addUnit("Shape.polygonIntersectsSegment()", {
+	"returns true when the polygon intersects the line segment": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const segment = new Segment(-5, -5, 5, 5);
+		const intersect = Shape.polygonIntersectsSegment(polygon, segment);
+		expect(intersect).toEqual(true);
+	},
+	"returns false when the polygon does not intersect the line segment": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const segment = new Segment(-5, -5, 5, -5);
+		const intersect = Shape.polygonIntersectsSegment(polygon, segment);
+		expect(intersect).toEqual(false);
+	},
+	"returns false when the polygon intersects the line but not the line segment": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const segment = new Segment(-5, -5, -4, -4);
+		const intersect = Shape.polygonIntersectsSegment(polygon, segment);
+		expect(intersect).toEqual(false);
+	},
+	"returns true when the segment is contained within the polygon": () => {
+		const polygon = new Polygon(-100, -100, 100, -100, 0, 200);
+		const segment = new Segment(-5, -5, -4, -4);
+		const intersect = Shape.polygonIntersectsSegment(polygon, segment);
+		expect(intersect).toEqual(true);
 	}
 });
 
