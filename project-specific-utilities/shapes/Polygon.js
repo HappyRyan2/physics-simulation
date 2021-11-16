@@ -29,6 +29,17 @@ class Polygon extends Shape {
 			return new Segment(vertex, this.vertices[(i + 1) % this.vertices.length]);
 		});
 	}
+
+	containsPoint(vector) {
+		const line = new Segment(vector, new Vector(this.vertices.max(v => v.x).x + 1, vector.y));
+		let numIntersections = 0;
+		for(const edge of this.edges()) {
+			if(Shape.segmentIntersectsSegment(line, edge)) {
+				numIntersections ++;
+			}
+		}
+		return numIntersections % 2 === 1;
+	}
 }
 
 testing.addUnit("Polygon constructor", {
@@ -63,5 +74,25 @@ testing.addUnit("Polygon.edges()", {
 			new Segment(1, -1, 0, 1),
 			new Segment(0, 1, -1, -1)
 		]);
+	}
+});
+testing.addUnit("Polygon.containsPoint()", {
+	"returns true when the point is inside the polygon": () => {
+		const polygon = new Polygon(
+			-1, -1,
+			1, -1,
+			0, 1
+		);
+		const point = new Vector(0, 0);
+		expect(polygon.containsPoint(point)).toEqual(true);
+	},
+	"returns false when the point is outside the polygon": () => {
+		const polygon = new Polygon(
+			-1, -1,
+			1, -1,
+			0, 1
+		);
+		const point = new Vector(0, 2);
+		expect(polygon.containsPoint(point)).toEqual(false);
 	}
 });
