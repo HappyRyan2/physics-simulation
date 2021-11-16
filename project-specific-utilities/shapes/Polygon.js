@@ -52,6 +52,20 @@ class Polygon extends Shape {
 		}
 		return numIntersections % 2 === 1;
 	}
+
+	translate(vector) {
+		if(!(vector instanceof Vector)) {
+			return this.translate(new Vector(...arguments));
+		}
+		return new Polygon(this.vertices.map(v => v.add(vector)));
+	}
+	rotate(angle) {
+		const polygon = new Polygon(this.vertices.map(v => new Vector(v)));
+		for(const vertex of polygon.vertices) {
+			vertex.angle += angle;
+		}
+		return polygon;
+	}
 }
 
 testing.addUnit("Polygon constructor", {
@@ -116,5 +130,34 @@ testing.addUnit("Polygon.containsPoint()", {
 		);
 		const point = new Vector(0, 0);
 		expect(polygon.containsPoint(point)).toEqual(true);
+	}
+});
+testing.addUnit("Polygon.translate()", {
+	"correctly returns the polygon after the translation": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const translated = polygon.translate(100, 100);
+		expect(translated).toEqual(new Polygon(99, 99, 101, 99, 100, 102));
+	},
+	"does not modify the original polygon": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const translated = polygon.translate(100, 100);
+		expect(polygon).toEqual(new Polygon(-1, -1, 1, -1, 0, 2));
+	},
+});
+testing.addUnit("Polygon.rotate()", {
+	"correctly returns the polygon after the rotation": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const rotated = polygon.rotate(90);
+		expect(rotated.vertices[0].x).toApproximatelyEqual(-1);
+		expect(rotated.vertices[0].y).toApproximatelyEqual(1);
+		expect(rotated.vertices[1].x).toApproximatelyEqual(-1);
+		expect(rotated.vertices[1].y).toApproximatelyEqual(-1);
+		expect(rotated.vertices[2].x).toApproximatelyEqual(2);
+		expect(rotated.vertices[2].y).toApproximatelyEqual(0);
+	},
+	"does not modify the original polygon": () => {
+		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
+		const rotated = polygon.rotate(90);
+		expect(polygon).toEqual(new Polygon(-1, -1, 1, -1, 0, 2));
 	}
 });
