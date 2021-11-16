@@ -103,6 +103,27 @@ class Shape {
 			);
 		}
 	}
+	intersects(shape) {
+		if(!(shape instanceof Shape)) {
+			throw new Error("Shape.intersects() expected a Shape object.");
+		}
+		const functions = [
+			[Circle, Circle, Shape.circleIntersectsCircle],
+			[Circle, Line, Shape.circleIntersectsLine],
+			[Circle, Segment, Shape.circleIntersectsSegment],
+			[Circle, Polygon, Shape.circleIntersectsPolygon],
+			[Line, Line, Shape.lineIntersectsLine],
+			[Line, Segment, Shape.lineIntersectsSegment],
+			[Line, Polygon, Shape.lineIntersectsPolygon],
+			[Polygon, Segment, Shape.lineIntersectsSegment],
+			[Polygon, Polygon, Shape.polygonIntersectsPolygon],
+			[Segment, Segment, Shape.segmentIntersectsSegment]
+		];
+		const [, , f1] = functions.find(([t1, t2]) => this instanceof t1 && shape instanceof t2) ?? [];
+		if(f1) { return f1(this, shape); }
+		const [, , f2] = functions.find(([t1, t2]) => this instanceof t2 && shape instanceof t1) ?? [];
+		return f2(shape, this);
+	}
 
 	static lineIntersection(line1, line2) {
 		if(line1.isVertical() && line2.isVertical()) {
@@ -383,6 +404,24 @@ testing.addUnit("Shape.polygonIntersectsPolygon()", {
 		const polygon2 = new Polygon(-1, -1, 1, -1, 0, 2);
 		const intersect = Shape.polygonIntersectsPolygon(polygon1, polygon2);
 		expect(intersect).toEqual(true);
+	}
+});
+testing.addUnit("Shape.intersects()", {
+	"returns true when the shapes intersect": () => {
+		const circle = new Circle(0, 0, 5);
+		const polygon = new Polygon(1, -10, 1, 10, 10, 0);
+		const intersect1 = circle.intersects(polygon);
+		const intersect2 = polygon.intersects(circle);
+		expect(intersect1).toEqual(true);
+		expect(intersect2).toEqual(true);
+	},
+	"returns false when the shapes do not intersect": () => {
+		const line = new Line(0, 0, 1, 1);
+		const segment = new Segment(0, 1, 1, 2);
+		const intersect1 = line.intersects(segment);
+		const intersect2 = segment.intersects(line);
+		expect(intersect1).toEqual(false);
+		expect(intersect2).toEqual(false);
 	}
 });
 
