@@ -15,6 +15,10 @@ class Segment extends Shape {
 			this.endpoint2 = new Vector(line.endpoint2);
 		}
 	}
+
+	isVertical() {
+		return this.endpoint1.x === this.endpoint2.x;
+	}
 }
 
 testing.addUnit("Segment constructor", {

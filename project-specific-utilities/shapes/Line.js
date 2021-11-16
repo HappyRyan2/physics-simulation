@@ -22,6 +22,10 @@ class Line extends Shape {
 	yIntercept() {
 		return (-this.slope() * this.endpoint1.x) + this.endpoint1.y;
 	}
+
+	isVertical() {
+		return this.endpoint1.x === this.endpoint2.x;
+	}
 }
 
 testing.addUnit("Line constructor", {
