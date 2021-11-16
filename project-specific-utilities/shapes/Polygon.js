@@ -31,7 +31,19 @@ class Polygon extends Shape {
 	}
 
 	containsPoint(vector) {
-		const line = new Segment(vector, new Vector(this.vertices.max(v => v.x).x + 1, vector.y));
+		/* find a ray through the point that doesn't contain any of the vertices */
+		const vertices = this.vertices.sort((v1, v2) => v2.subtract(vector).angle - v1.subtract(vector).angle);
+		let line;
+		for(let i = 0; i < vertices.length - 1; i ++) {
+			const vertex = vertices[i];
+			const next = vertices[i + 1];
+			if(vertex.subtract(vector).angle !== next.subtract(vector).angle) {
+				const angle = (vertex.angle + next.angle) / 2;
+				const magnitude = vertices.max(v => v.subtract(vector).magnitude, null, "value") + 1;
+				line = new Segment(vector, vector.add(new Vector({ angle, magnitude })));
+			}
+		}
+		/* count the number of intersections between the ray and the edges of the polygon */
 		let numIntersections = 0;
 		for(const edge of this.edges()) {
 			if(Shape.segmentIntersectsSegment(line, edge)) {
@@ -94,5 +106,15 @@ testing.addUnit("Polygon.containsPoint()", {
 		);
 		const point = new Vector(0, 2);
 		expect(polygon.containsPoint(point)).toEqual(false);
+	},
+	"returns the correct answer even when the ray would hit a vertex": () => {
+		const polygon = new Polygon(
+			0, -1,
+			1, 0,
+			0, 1,
+			-1, 0
+		);
+		const point = new Vector(0, 0);
+		expect(polygon.containsPoint(point)).toEqual(true);
 	}
 });
