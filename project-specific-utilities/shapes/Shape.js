@@ -46,6 +46,31 @@ class Shape {
 			(minX <= xIntersection2 && xIntersection2 <= maxX)
 		);
 	}
+
+	static lineIntersection(line1, line2) {
+		if(line1.isVertical() && line2.isVertical()) {
+			return (line1.endpoint1.x === line2.endpoint1.x) ? Infinity : null;
+		}
+		else if(line1.isVertical() || line2.isVertical()) {
+			const verticalLine = [line1, line2].find(v => v.isVertical());
+			const otherLine = [line1, line2].find(v => !v.isVertical());
+			return new Vector(
+				verticalLine.endpoint1.x,
+				otherLine.slope() * (verticalLine.endpoint1.x - otherLine.endpoint1.x) + otherLine.endpoint1.y
+			);
+		}
+
+		const slope1 = line1.slope();
+		const slope2 = line2.slope();
+		if(slope1 === slope2) {
+			return (line1.yIntercept() === line2.yIntercept()) ? Infinity : null;
+		}
+		const yIntercept1 = line1.yIntercept();
+		const yIntercept2 = line2.yIntercept();
+		const xIntersection = (yIntercept2 - yIntercept1) / (slope1 - slope2);
+		const yIntersection = xIntersection * slope1 + yIntercept1;
+		return new Vector(xIntersection, yIntersection);
+	}
 }
 
 
@@ -126,5 +151,45 @@ testing.addUnit("Shape.circleIntersectsSegment()", {
 		const segment = new Segment(0, 0, 0, 1);
 		const intersect = Shape.circleIntersectsSegment(circle, segment);
 		expect(intersect).toEqual(true);
+	}
+});
+
+testing.addUnit("Shape.lineIntersection()", {
+	"returns the intersection point for two lines that intersect": () => {
+		const line1 = new Line(0, 0, 10, 10);
+		const line2 = new Line(0, 10, 10, 0);
+		const intersection = Shape.lineIntersection(line1, line2);
+		expect(intersection).toEqual(new Vector(5, 5));
+	},
+	"returns null when the lines do not intersect": () => {
+		const line1 = new Line(0, 0, 10, 10);
+		const line2 = new Line(0, 10, 10, 20);
+		const intersection = Shape.lineIntersection(line1, line2);
+		expect(intersection).toEqual(null);
+	},
+	"returns Infinity when there are infinitely many intersections": () => {
+		const line1 = new Line(0, 0, 5, 5);
+		const line2 = new Line(5, 5, 10, 10);
+		const intersection = Shape.lineIntersection(line1, line2);
+		expect(intersection).toEqual(Infinity);
+	},
+
+	"returns null when the lines do not intersect and are vertical": () => {
+		const line1 = new Line(0, 1, 0, 2);
+		const line2 = new Line(1, 1, 1, 2);
+		const intersection = Shape.lineIntersection(line1, line2);
+		expect(intersection).toEqual(null);
+	},
+	"returns Infinity when there are infinitely many intersections and the lines are vertical": () => {
+		const line1 = new Line(0, 1, 0, 2);
+		const line2 = new Line(0, 3, 0, 4);
+		const intersection = Shape.lineIntersection(line1, line2);
+		expect(intersection).toEqual(Infinity);
+	},
+	"returns the intersection point when one of the lines is vertical": () => {
+		const line1 = new Line(0, 1, 0, 2);
+		const line2 = new Line(10, 20, 11, 21);
+		const intersection = Shape.lineIntersection(line1, line2);
+		expect(intersection).toEqual(new Vector(0, 10));
 	}
 });
