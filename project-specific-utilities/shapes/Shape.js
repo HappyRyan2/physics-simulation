@@ -74,6 +74,17 @@ class Shape {
 		if(polygon.containsPoint(segment.endpoint1)) { return true; }
 		return polygon.edges().some(e => Shape.segmentIntersectsSegment(e, segment));
 	}
+	static polygonIntersectsPolygon(polygon1, polygon2) {
+		if(polygon1.containsPoint(polygon2.vertices[0]) || polygon2.containsPoint(polygon1.vertices[0])) {
+			return true;
+		}
+		for(const e1 of polygon1.edges()) {
+			for(const e2 of polygon2.edges()) {
+				if(Shape.segmentIntersectsSegment(e1, e2)) { return true; }
+			}
+		}
+		return false;
+	}
 	static segmentIntersectsSegment(segment1, segment2) {
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return false; }
@@ -351,6 +362,26 @@ testing.addUnit("Shape.polygonIntersectsSegment()", {
 		const polygon = new Polygon(-100, -100, 100, -100, 0, 200);
 		const segment = new Segment(-5, -5, -4, -4);
 		const intersect = Shape.polygonIntersectsSegment(polygon, segment);
+		expect(intersect).toEqual(true);
+	}
+});
+testing.addUnit("Shape.polygonIntersectsPolygon()", {
+	"returns true when the polygons intersect": () => {
+		const polygon1 = new Polygon(-1, -1, 1, -1, 0, 2);
+		const polygon2 = new Polygon(1, 0, 1, -2, 3, -2, 3, 0);
+		const intersect = Shape.polygonIntersectsPolygon(polygon1, polygon2);
+		expect(intersect).toEqual(true);
+	},
+	"returns false when the polygons do not intersect": () => {
+		const polygon1 = new Polygon(-1, -1, 1, -1, 0, 2);
+		const polygon2 = new Polygon(3, 0, 3, -2, 5, -2, 5, 0);
+		const intersect = Shape.polygonIntersectsPolygon(polygon1, polygon2);
+		expect(intersect).toEqual(false);
+	},
+	"returns true when one polygon is contained within the other": () => {
+		const polygon1 = new Polygon(-100, -100, 100, -100, 100, 100, -100, 100);
+		const polygon2 = new Polygon(-1, -1, 1, -1, 0, 2);
+		const intersect = Shape.polygonIntersectsPolygon(polygon1, polygon2);
 		expect(intersect).toEqual(true);
 	}
 });
