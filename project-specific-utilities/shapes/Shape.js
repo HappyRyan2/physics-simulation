@@ -52,6 +52,9 @@ class Shape {
 			polygon.edges().some(e => Shape.circleIntersectsSegment(circle, e))
 		);
 	}
+	static lineIntersectsLine(line1, line2) {
+		return Shape.lineIntersection(line1, line2) !== null;
+	}
 	static segmentIntersectsSegment(segment1, segment2) {
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return false; }
@@ -219,6 +222,26 @@ testing.addUnit("Shape.circleIntersectsPolygon()", {
 		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
 		expect(intersect).toEqual(true);
 	}
+});
+testing.addUnit("Shape.lineIntersectsLine()", {
+	"returns true when the lines intersect": () => {
+		const line1 = new Line(0, 0, 10, 10);
+		const line2 = new Line(0, 10, 10, 0);
+		const intersect = Shape.lineIntersectsLine(line1, line2);
+		expect(intersect).toEqual(true);
+	},
+	"returns false when the lines do not intersect": () => {
+		const line1 = new Line(0, 10, 10, 20);
+		const line2 = new Line(0, 0, 10, 10);
+		const intersect = Shape.lineIntersectsLine(line1, line2);
+		expect(intersect).toEqual(false);
+	},
+	"returns true when the lines have infinitely many intersections": () => {
+		const line1 = new Line(0, 0, 1, 1);
+		const line2 = new Line(2, 2, 3, 3);
+		const intersect = Shape.lineIntersectsLine(line1, line2);
+		expect(intersect).toEqual(true);
+	},
 });
 testing.addUnit("Shape.segmentIntersectsSegment()", {
 	"returns true when the line segments intersect": () => {
