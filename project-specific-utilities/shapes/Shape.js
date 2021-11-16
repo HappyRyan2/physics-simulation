@@ -46,6 +46,24 @@ class Shape {
 			(minX <= xIntersection2 && xIntersection2 <= maxX)
 		);
 	}
+	static segmentIntersectsSegment(segment1, segment2) {
+		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
+		if(intersection === null) { return false; }
+		else if(intersection === Infinity) {
+			return (
+				Math.max(segment1.endpoint1.x, segment1.endpoint2.x) >= Math.min(segment2.endpoint1.x, segment2.endpoint2.x) &&
+				Math.max(segment1.endpoint1.y, segment1.endpoint2.y) >= Math.min(segment2.endpoint1.y, segment2.endpoint2.y)
+			);
+		}
+		else {
+			return (
+				(Math.min(segment1.endpoint1.x, segment1.endpoint2.x) <= intersection.x && intersection.x <= Math.max(segment1.endpoint1.x, segment1.endpoint2.x)) &&
+				(Math.min(segment1.endpoint1.y, segment1.endpoint2.y) <= intersection.y && intersection.y <= Math.max(segment1.endpoint1.y, segment1.endpoint2.y)) &&
+				(Math.min(segment2.endpoint1.x, segment2.endpoint2.x) <= intersection.x && intersection.x <= Math.max(segment2.endpoint1.x, segment2.endpoint2.x)) &&
+				(Math.min(segment2.endpoint1.y, segment2.endpoint2.y) <= intersection.y && intersection.y <= Math.max(segment2.endpoint1.y, segment2.endpoint2.y))
+			);
+		}
+	}
 
 	static lineIntersection(line1, line2) {
 		if(line1.isVertical() && line2.isVertical()) {
@@ -151,6 +169,32 @@ testing.addUnit("Shape.circleIntersectsSegment()", {
 		const segment = new Segment(0, 0, 0, 1);
 		const intersect = Shape.circleIntersectsSegment(circle, segment);
 		expect(intersect).toEqual(true);
+	}
+});
+testing.addUnit("Shape.segmentIntersectsSegment()", {
+	"returns true when the line segments intersect": () => {
+		const segment1 = new Segment(-5, -5, 5, 5);
+		const segment2 = new Segment(-5, 5, 5, -5);
+		const intersect = Shape.segmentIntersectsSegment(segment1, segment2);
+		expect(intersect).toEqual(true);
+	},
+	"returns false when the line segments do not intersect": () => {
+		const segment1 = new Segment(0, 0, 1, 1);
+		const segment2 = new Segment(0, 1, 1, 2);
+		const intersect = Shape.segmentIntersectsSegment(segment1, segment2);
+		expect(intersect).toEqual(false);
+	},
+	"returns false when the lines intersect but the line segments do not": () => {
+		const segment1 = new Segment(0, 0, 1, 1);
+		const segment2 = new Segment(0, 10, 1, 10);
+		const intersect = Shape.segmentIntersectsSegment(segment1, segment2);
+		expect(intersect).toEqual(false);
+	},
+	"returns false when the lines overlap but the line segments do not": () => {
+		const segment1 = new Segment(0, 0, 1, 0);
+		const segment2 = new Segment(2, 0, 3, 0);
+		const intersect = Shape.segmentIntersectsSegment(segment1, segment2);
+		expect(intersect).toEqual(false);
 	}
 });
 
