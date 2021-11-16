@@ -46,6 +46,12 @@ class Shape {
 			(minX <= xIntersection2 && xIntersection2 <= maxX)
 		);
 	}
+	static circleIntersectsPolygon(circle, polygon) {
+		return (
+			polygon.containsPoint(circle.position) ||
+			polygon.edges().some(e => Shape.circleIntersectsSegment(circle, e))
+		);
+	}
 	static segmentIntersectsSegment(segment1, segment2) {
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return false; }
@@ -168,6 +174,49 @@ testing.addUnit("Shape.circleIntersectsSegment()", {
 		const circle = new Circle(0, 0, 5);
 		const segment = new Segment(0, 0, 0, 1);
 		const intersect = Shape.circleIntersectsSegment(circle, segment);
+		expect(intersect).toEqual(true);
+	}
+});
+testing.addUnit("Shape.circleIntersectsPolygon()", {
+	"returns true when the circle and the polygon intersect": () => {
+		const circle = new Circle(0, 0, 5);
+		const polygon = new Polygon(
+			1, -10,
+			1, 10,
+			10, 0
+		);
+		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
+		expect(intersect).toEqual(true);
+	},
+	"returns false when the circle and the polygon do not intersect": () => {
+		const circle = new Circle(0, 0, 5);
+		const polygon = new Polygon(
+			-10, 10,
+			10, 10,
+			0, 20
+		);
+		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
+		expect(intersect).toEqual(false);
+	},
+	"returns true when the circle is contained within the polygon": () => {
+		const circle = new Circle(0, 0, 2);
+		const polygon = new Polygon(
+			-10, 10,
+			10, 10,
+			10, -10,
+			-10, -10
+		);
+		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
+		expect(intersect).toEqual(true);
+	},
+	"returns true when the polygon is contained within the circle": () => {
+		const circle = new Circle(0, 0, 100);
+		const polygon = new Polygon(
+			-1, 10,
+			1, 10,
+			0, 11
+		);
+		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
 		expect(intersect).toEqual(true);
 	}
 });
