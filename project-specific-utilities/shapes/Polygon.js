@@ -23,6 +23,12 @@ class Polygon extends Shape {
 		}
 		c.fill();
 	}
+
+	edges() {
+		return this.vertices.map((vertex, i) => {
+			return new Segment(vertex, this.vertices[(i + 1) % this.vertices.length]);
+		});
+	}
 }
 
 testing.addUnit("Polygon constructor", {
@@ -41,6 +47,21 @@ testing.addUnit("Polygon constructor", {
 			new Vector(1, 2),
 			new Vector(3, 4),
 			new Vector(5, 6)
+		]);
+	}
+});
+testing.addUnit("Polygon.edges()", {
+	"correctly returns the edges of the polygon": () => {
+		const polygon = new Polygon(
+			-1, -1,
+			1, -1,
+			0, 1
+		);
+		const edges = polygon.edges();
+		expect(edges).toEqual([
+			new Segment(-1, -1, 1, -1),
+			new Segment(1, -1, 0, 1),
+			new Segment(0, 1, -1, -1)
 		]);
 	}
 });
