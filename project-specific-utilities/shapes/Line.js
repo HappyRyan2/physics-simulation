@@ -26,6 +26,19 @@ class Line extends Shape {
 	isVertical() {
 		return this.endpoint1.x === this.endpoint2.x;
 	}
+
+	translate(vector) {
+		if(!(vector instanceof Vector)) {
+			return this.translate(new Vector(...arguments));
+		}
+		return new Line(this.endpoint1.add(vector), this.endpoint2.add(vector));
+	}
+	rotate(angle) {
+		const result = new Line(new Vector(this.endpoint1), new Vector(this.endpoint2));
+		result.endpoint1.angle += angle;
+		result.endpoint2.angle += angle;
+		return result;
+	}
 }
 
 testing.addUnit("Line constructor", {
@@ -61,5 +74,32 @@ testing.addUnit("Line.yIntercept()", {
 		const line = new Line(5, 6, 105, 106);
 		const intercept = line.yIntercept();
 		expect(intercept).toEqual(1);
+	}
+});
+testing.addUnit("Line.translate()", {
+	"correctly returns the line after the translation": () => {
+		const line = new Line(0, 0, 1, 1);
+		const translated = line.translate(5, 0);
+		expect(translated).toEqual(new Line(5, 0, 6, 1));
+	},
+	"does not modify the original line": () => {
+		const line = new Line(0, 0, 1, 1);
+		const translated = line.translate(5, 0);
+		expect(line).toEqual(new Line(0, 0, 1, 1));
+	}
+});
+testing.addUnit("Line.rotate()", {
+	"correctly returns the line after the rotation about the origin": () => {
+		const line = new Line(0, 0, 1, -1);
+		const rotated = line.rotate(90);
+		expect(rotated.endpoint1.x).toApproximatelyEqual(0);
+		expect(rotated.endpoint1.y).toApproximatelyEqual(0);
+		expect(rotated.endpoint2.x).toApproximatelyEqual(-1);
+		expect(rotated.endpoint2.y).toApproximatelyEqual(-1);
+	},
+	"does not modify the original line": () => {
+		const line = new Line(0, 0, 1, 1);
+		const rotated = line.rotate(90);
+		expect(line).toEqual(new Line(0, 0, 1, 1));
 	}
 });
