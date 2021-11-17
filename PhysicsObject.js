@@ -11,6 +11,7 @@ class PhysicsObject {
 		this.gravitationalMass = properties.gravitationalMass ?? properties.mass ?? 1;
 		this.rotationalInertia = properties.rotationalInertia ?? properties.mass; // TODO: add calculations for rotational inertia
 		this.elasticity = properties.elasticity ?? 0;
+		this.antigravity = properties.antigravity ?? false;
 	}
 
 	updateVelocity() {

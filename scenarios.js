@@ -23,7 +23,8 @@ const scenarios = [
 						new Vector(width, height * 7/8),
 						new Vector(width, height),
 						new Vector(0, height)
-					])
+					]),
+					antigravity: true
 				})
 			], 0.1);
 		}
