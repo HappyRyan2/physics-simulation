@@ -42,4 +42,10 @@ class PhysicsObject {
 		torque *= Math.sin(TO_RADIANS * (force.angle - position.angle));
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
+
+	intersects(physicsObject) {
+		const shape1 = this.shape.rotate(this.rotation).translate(this.position);
+		const shape2 = physicsObject.shape.rotate(physicsObject.rotation).translate(physicsObject.position);
+		return shape1.intersects(shape2);
+	}
 }
