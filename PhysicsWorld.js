@@ -10,7 +10,17 @@ class PhysicsWorld {
 		}
 	}
 	applyCollisions() {
-
+		for(let i = 0; i < this.objects.length; i ++) {
+			const obj1 = this.objects[i];
+			for(let j = i + 1; j < this.objects.length; j ++) {
+				const obj2 = this.objects[j];
+				if(obj1.intersects(obj2)) {
+					const force = obj1.collisionForce(obj2);
+					obj1.applyForce(force);
+					obj2.applyForce(force.multiply(-1));
+				}
+			}
+		}
 	}
 
 	update() {
