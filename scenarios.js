@@ -3,10 +3,9 @@ const scenarios = [
 		name: "falling-ball",
 		load: () => {
 			app.physicsWorld = new PhysicsWorld([
-				new PhysicsObject(
-					new Circle(new Vector(app.canvasIO.canvas.width / 2, app.canvasIO.canvas.height / 2), 50),
-					1
-				)
+				new PhysicsObject({
+					shape: new Circle(0, 0, 1),
+				})
 			], 0.1);
 		}
 	},
@@ -15,18 +14,17 @@ const scenarios = [
 		load: () => {
 			const { width, height } = app.canvasIO.canvas;
 			app.physicsWorld = new PhysicsWorld([
-				new PhysicsObject(
-					new Circle(new Vector(width / 2, height / 2), 50),
-					1
-				),
-				new PhysicsObject(
-					new Polygon([
+				new PhysicsObject({
+					shape: new Circle(new Vector(width / 2, height / 2), 50),
+				}),
+				new PhysicsObject({
+					shape: new Polygon([
 						new Vector(0, height * 7/8),
 						new Vector(width, height * 7/8),
 						new Vector(width, height),
 						new Vector(0, height)
 					])
-				)
+				})
 			], 0.1);
 		}
 	}
