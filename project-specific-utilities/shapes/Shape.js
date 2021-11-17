@@ -10,7 +10,8 @@ class Shape {
 		const slope = line.slope();
 		const intercept = line.yIntercept();
 		const radius = circle.radius;
-		return ((2 * slope * intercept) ** 2 - 4 * (slope ** 2 + 1) * (intercept ** 2 - radius ** 2)) >= 0;
+		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * slope * circle.position.y);
+		return discriminant >= 0;
 	}
 	static circleIntersectsSegment(circle, segment) {
 		if(segment.endpoint1.x === segment.endpoint2.x) {
@@ -33,7 +34,7 @@ class Shape {
 		}
 		const slope = new Line(segment).slope();
 		const intercept = new Line(segment).yIntercept();
-		const discriminant = (2 * slope * intercept) ** 2 - 4 * (slope ** 2 + 1) * (intercept ** 2 - radius ** 2);
+		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * slope * circle.position.y);
 		if(discriminant < 0) {
 			return false;
 		}
@@ -178,6 +179,19 @@ testing.addUnit("Shape.circleIntersectsLine()", {
 		const line = new Line(0, 10, 1, 11);
 		const intersects = Shape.circleIntersectsLine(circle, line);
 		expect(intersects).toEqual(false);
+	},
+
+	"returns false when the circle and the line do not intersect and the circle is not centered at the origin": () => {
+		const circle = new Circle(50, 0, 5);
+		const line = new Line(1, -1, 0, 100);
+		const intersect = Shape.circleIntersectsLine(circle, line);
+		expect(intersect).toEqual(false);
+	},
+	"returns true when the circle and the line intersect and the circle is not centered at the origin": () => {
+		const circle = new Circle(50, 0, 5);
+		const line = new Line(0, 2, 100, 2);
+		const intersect = Shape.circleIntersectsLine(circle, line);
+		expect(intersect).toEqual(true);
 	}
 });
 testing.addUnit("Shape.circleIntersectsSegment()", {
@@ -227,6 +241,19 @@ testing.addUnit("Shape.circleIntersectsSegment()", {
 	"returns true when the line segment is vertical and is contained within the circle": () => {
 		const circle = new Circle(0, 0, 5);
 		const segment = new Segment(0, 0, 0, 1);
+		const intersect = Shape.circleIntersectsSegment(circle, segment);
+		expect(intersect).toEqual(true);
+	},
+
+	"returns false when the circle and the segment do not intersect and the circle is not centered at the origin": () => {
+		const circle = new Circle(50, 0, 5);
+		const segment = new Segment(1, -1, 0, 100);
+		const intersect = Shape.circleIntersectsSegment(circle, segment);
+		expect(intersect).toEqual(false);
+	},
+	"returns true when the circle and the segment intersect and the circle is not centered at the origin": () => {
+		const circle = new Circle(50, 0, 5);
+		const segment = new Segment(0, 2, 100, 2);
 		const intersect = Shape.circleIntersectsSegment(circle, segment);
 		expect(intersect).toEqual(true);
 	}

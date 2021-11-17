@@ -85,7 +85,54 @@ class PhysicsObject {
 	}
 }
 
-
+testing.addUnit("PhysicsObject.intersects()", {
+	"returns true when the objects intersect": () => {
+		const obj1 = new PhysicsObject({ shape: new Circle(0, 0, 5) });
+		const obj2 = new PhysicsObject({ shape: new Polygon(
+			1, -10,
+			1, 10,
+			10, 0
+		) });
+		const intersect = obj1.intersects(obj2);
+		expect(intersect).toEqual(true);
+	},
+	"returns false when the objects do not intersect": () => {
+		const obj1 = new PhysicsObject({ shape: new Circle(20, 0, 5) });
+		const obj2 = new PhysicsObject({ shape: new Polygon(
+			1, -10,
+			1, 10,
+			10, 0
+		) });
+		const intersect = obj1.intersects(obj2);
+		expect(intersect).toEqual(false);
+	},
+	"works when the intersecting objects have nonzero position": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(20, 0, 5),
+			position: new Vector(-20, 0)
+		});
+		const obj2 = new PhysicsObject({ shape: new Polygon(
+			1, -1,
+			-1, -1,
+			0, 1
+		) });
+		const intersect = obj1.intersects(obj2);
+		expect(intersect).toEqual(true);
+	},
+	"works when the intersecting objects have nonzero rotation": () => {
+		const obj1 = new PhysicsObject({ shape: new Circle(50, 0, 5) });
+		const obj2 = new PhysicsObject({
+			shape: new Polygon(
+				1, -1,
+				-1, -1,
+				0, 100
+			),
+			rotation: -90
+		});
+		const intersect = obj1.intersects(obj2);
+		expect(intersect).toEqual(true);
+	}
+});
 testing.addUnit("PhysicsObject.collisionForce()", {
 	"works for equal-mass objects colliding elastically in one dimension": () => {
 		const obj1 = new PhysicsObject({
