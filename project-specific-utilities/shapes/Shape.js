@@ -10,7 +10,7 @@ class Shape {
 		const slope = line.slope();
 		const intercept = line.yIntercept();
 		const radius = circle.radius;
-		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * slope * circle.position.y);
+		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * intercept * circle.position.y);
 		return discriminant >= 0;
 	}
 	static circleIntersectsSegment(circle, segment) {
@@ -34,7 +34,7 @@ class Shape {
 		}
 		const slope = new Line(segment).slope();
 		const intercept = new Line(segment).yIntercept();
-		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * slope * circle.position.y);
+		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * intercept * circle.position.y);
 		if(discriminant < 0) {
 			return false;
 		}
@@ -192,6 +192,14 @@ testing.addUnit("Shape.circleIntersectsLine()", {
 		const line = new Line(0, 2, 100, 2);
 		const intersect = Shape.circleIntersectsLine(circle, line);
 		expect(intersect).toEqual(true);
+	},
+
+	"works when the slope and the y-intercept of the line are not equal": () => {
+		// regression test
+		const circle = new Circle(10, 10, 5);
+		const line = new Line(0, 14, 20, 14);
+		const intersect = Shape.circleIntersectsLine(circle, line);
+		expect(intersect).toEqual(true);
 	}
 });
 testing.addUnit("Shape.circleIntersectsSegment()", {
@@ -254,6 +262,14 @@ testing.addUnit("Shape.circleIntersectsSegment()", {
 	"returns true when the circle and the segment intersect and the circle is not centered at the origin": () => {
 		const circle = new Circle(50, 0, 5);
 		const segment = new Segment(0, 2, 100, 2);
+		const intersect = Shape.circleIntersectsSegment(circle, segment);
+		expect(intersect).toEqual(true);
+	},
+
+	"works when the slope and the y-intercept of the line are not equal": () => {
+		// regression test
+		const circle = new Circle(10, 10, 5);
+		const segment = new Segment(0, 14, 20, 14);
 		const intersect = Shape.circleIntersectsSegment(circle, segment);
 		expect(intersect).toEqual(true);
 	}
