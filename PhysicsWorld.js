@@ -12,16 +12,28 @@ class PhysicsWorld {
 		}
 	}
 	applyCollisions() {
+		const newIntersections = [];
 		for(let i = 0; i < this.objects.length; i ++) {
 			const obj1 = this.objects[i];
 			for(let j = i + 1; j < this.objects.length; j ++) {
 				const obj2 = this.objects[j];
-				if(obj1.intersects(obj2)) {
+				const intersects = obj1.intersects(obj2);
+				if(obj1.shouldCollide(obj2, intersects)) {
 					const force = obj1.collisionForce(obj2);
 					obj1.applyForce(force);
 					obj2.applyForce(force.multiply(-1));
 				}
+				if(intersects) {
+					newIntersections.push([obj1, obj2]);
+				}
 			}
+		}
+		for(const obj of this.objects) {
+			obj.overlappedObjects = [];
+		}
+		for(const [obj1, obj2] of newIntersections) {
+			obj1.overlappedObjects.push(obj2);
+			obj2.overlappedObjects.push(obj1);
 		}
 	}
 

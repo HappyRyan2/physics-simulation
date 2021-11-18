@@ -12,6 +12,8 @@ class PhysicsObject {
 		this.rotationalInertia = properties.rotationalInertia ?? properties.mass ?? 1; // TODO: add calculations for rotational inertia
 		this.elasticity = properties.elasticity ?? 0;
 		this.antigravity = properties.antigravity ?? false;
+
+		this.overlappedObjects = [];
 	}
 
 	updateVelocity() {
@@ -49,6 +51,18 @@ class PhysicsObject {
 		const shape1 = this.shape.rotate(this.rotation).translate(this.position);
 		const shape2 = physicsObject.shape.rotate(physicsObject.rotation).translate(physicsObject.position);
 		return shape1.intersects(shape2);
+	}
+	movingToward(physicsObject) {
+		const distance = this.position.subtract(physicsObject.position).magnitude;
+		const nextDistance = this.position.add(this.velocity).subtract(physicsObject.position.add(physicsObject.velocity)).magnitude;
+		return nextDistance <= distance;
+	}
+	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
+		if(!intersects) { return false; }
+		if(this.overlappedObjects.includes(physicsObject)) {
+			return this.movingToward(physicsObject);
+		}
+		return true;
 	}
 
 
@@ -281,5 +295,36 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-1);
 		expect(collisionForce.y).toApproximatelyEqual(-1);
+	}
+});
+testing.addUnit("PhysicsObject collisions", {
+	"correctly simulates semi-elastic collisions between equal-mass objects moving in opposite directions": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 2),
+			position: new Vector(-9, 0),
+			velocity: new Vector(2, 0),
+			elasticity: 0.5
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Circle(0, 0, 2),
+			position: new Vector(9, 0),
+			velocity: new Vector(-2, 0),
+			elasticity: 0.5
+		});
+		const world = new PhysicsWorld([obj1, obj2]);
+
+		for(let i = 0; i < 10; i ++) {
+			world.update();
+		}
+
+		expect(obj1.position.x).toBeNegative();
+		expect(obj1.position.y).toApproximatelyEqual(0, 1e-10);
+		expect(obj1.velocity.x).toApproximatelyEqual(-1);
+		expect(obj1.velocity.y).toApproximatelyEqual(0);
+
+		expect(obj2.position.x).toBePositive();
+		expect(obj2.position.y).toApproximatelyEqual(0, 1e-10);
+		expect(obj2.velocity.x).toApproximatelyEqual(1);
+		expect(obj2.velocity.y).toApproximatelyEqual(0);
 	}
 });
