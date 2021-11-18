@@ -10,6 +10,50 @@ const scenarios = [
 		}
 	},
 	{
+		name: "ball-collisions-different-elasticities",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(0, 100),
+					velocity: new Vector(3, 0),
+					elasticity: 1
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(width, 100),
+					velocity: new Vector(-3, 0),
+					elasticity: 1
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(0, 250),
+					velocity: new Vector(3, 0),
+					elasticity: 0.5
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(width, 250),
+					velocity: new Vector(-3, 0),
+					elasticity: 0.5
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(0, 400),
+					velocity: new Vector(3, 0),
+					elasticity: 0
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(width, 400),
+					velocity: new Vector(-3, 0),
+					elasticity: 0
+				}),
+			]);
+		}
+	},
+	{
 		name: "bouncing-ball",
 		load: () => {
 			const { width, height } = app.canvasIO.canvas;
