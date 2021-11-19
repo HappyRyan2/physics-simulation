@@ -66,6 +66,10 @@ class Polygon extends Shape {
 		}
 		return polygon;
 	}
+
+	closestEdge(point) {
+		return this.edges().min(e => e.distanceFrom(point));
+	}
 }
 
 testing.addUnit("Polygon constructor", {
@@ -159,5 +163,18 @@ testing.addUnit("Polygon.rotate()", {
 		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
 		const rotated = polygon.rotate(90);
 		expect(polygon).toEqual(new Polygon(-1, -1, 1, -1, 0, 2));
+	}
+});
+testing.addUnit("Polygon.closestEdge()", {
+	"correctly returns the closest edge of the polygon": () => {
+		const polygon = new Polygon([
+			new Vector(1, 1),
+			new Vector(3, 1),
+			new Vector(3, 3),
+			new Vector(1, 3)
+		]);
+		const point = new Vector(5, 2);
+		const edge = polygon.closestEdge(point);
+		expect(edge).toEqual(polygon.edges()[1]);
 	}
 });
