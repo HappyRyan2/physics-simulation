@@ -18,11 +18,7 @@ class PhysicsWorld {
 			for(let j = i + 1; j < this.objects.length; j ++) {
 				const obj2 = this.objects[j];
 				const intersects = obj1.intersects(obj2);
-				if(obj1.shouldCollide(obj2, intersects)) {
-					const force = obj1.collisionForce(obj2);
-					obj1.applyForce(force);
-					obj2.applyForce(force.multiply(-1));
-				}
+				obj1.checkForCollisions(obj2, intersects);
 				if(intersects) {
 					newIntersections.push([obj1, obj2]);
 				}
