@@ -32,6 +32,53 @@ class Segment extends Shape {
 		result.endpoint2.angle += angle;
 		return result;
 	}
+
+	distanceFrom(point) {
+		if(this.endpoint1.x === this.endpoint2.x) {
+			if(
+				Math.min(this.endpoint1.y, this.endpoint2.y) <= point.y &&
+				point.y <= Math.max(this.endpoint1.y, this.endpoint2.y)
+			) {
+				return Math.dist(point.x, this.endpoint1.x);
+			}
+			else {
+				return Math.min(
+					this.endpoint1.subtract(point).magnitude,
+					this.endpoint2.subtract(point).magnitude
+				);
+			}
+		}
+		if(this.endpoint1.y === this.endpoint2.y) {
+			if(
+				Math.min(this.endpoint1.x, this.endpoint2.x) <= point.x &&
+				point.x <= Math.max(this.endpoint1.x, this.endpoint2.x)
+			) {
+				return Math.dist(point.y, this.endpoint1.y);
+			}
+			else {
+				return Math.min(
+					this.endpoint1.subtract(point).magnitude,
+					this.endpoint2.subtract(point).magnitude
+				);
+			}
+		}
+
+		const perpendicularSlope = -1 / new Line(this).slope();
+		const intersection = Shape.lineIntersection(
+			new Line(this),
+			new Line(point.x, point.y, point.x + 1, point.y + perpendicularSlope)
+		);
+		if(
+			(Math.min(this.endpoint1.x, this.endpoint2.x) <= intersection.x && intersection.x <= Math.max(this.endpoint1.x, this.endpoint2.x)) &&
+			(Math.min(this.endpoint1.y, this.endpoint2.y) <= intersection.y && intersection.y <= Math.max(this.endpoint1.y, this.endpoint2.y))
+		) {
+			return intersection.subtract(point).magnitude;
+		}
+		return Math.min(
+			this.endpoint1.subtract(point).magnitude,
+			this.endpoint2.subtract(point).magnitude
+		);
+	}
 }
 
 testing.addUnit("Segment constructor", {
@@ -80,5 +127,43 @@ testing.addUnit("Segment.rotate()", {
 		const segment = new Segment(0, 0, 1, 1);
 		const rotated = segment.rotate(90);
 		expect(segment).toEqual(new Segment(0, 0, 1, 1));
+	}
+});
+testing.addUnit("Segment.distanceFrom()", {
+	"works when the minimal distance is on the segment": () => {
+		const segment = new Segment(0, 0, 2, 2);
+		const point = new Vector(0, 2);
+		const distance = segment.distanceFrom(point);
+		expect(distance).toEqual(Math.SQRT2);
+	},
+	"works when the minimal distance is not on the segment": () => {
+		const segment = new Segment(0, 0, 2, 2);
+		const point = new Vector(4, 4);
+		const distance = segment.distanceFrom(point);
+		expect(distance).toEqual(2 * Math.SQRT2);
+	},
+	"works when the line is vertical and the minimal distance is on the segment": () => {
+		const segment = new Segment(0, 0, 0, 2);
+		const point = new Vector(4, 1);
+		const distance = segment.distanceFrom(point);
+		expect(distance).toEqual(4);
+	},
+	"works when the line is vertical and the minimal distance is not on the segment": () => {
+		const segment = new Segment(0, 0, 0, 2);
+		const point = new Vector(3, -4);
+		const distance = segment.distanceFrom(point);
+		expect(distance).toEqual(5);
+	},
+	"works when the line is horizontal and the minimal distance is on the segment": () => {
+		const segment = new Segment(0, 0, 2, 0);
+		const point = new Vector(1, -17);
+		const distance = segment.distanceFrom(point);
+		expect(distance).toEqual(17);
+	},
+	"works when the line is horizontal and the minimal distance is not on the segment": () => {
+		const segment = new Segment(0, 0, 2, 0);
+		const point = new Vector(-3, -4);
+		const distance = segment.distanceFrom(point);
+		expect(distance).toEqual(5);
 	}
 });

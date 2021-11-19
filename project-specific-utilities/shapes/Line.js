@@ -43,6 +43,21 @@ class Line extends Shape {
 	angle() {
 		return this.endpoint2.subtract(this.endpoint1).angle;
 	}
+
+	distanceFrom(point) {
+		if(this.endpoint1.x === this.endpoint2.x) {
+			return Math.dist(point.x, this.endpoint1.x);
+		}
+		if(this.endpoint1.y === this.endpoint2.y) {
+			return Math.dist(point.y, this.endpoint1.y);
+		}
+		const perpendicularSlope = -1 / this.slope();
+		const intersection = Shape.lineIntersection(
+			this,
+			new Line(point.x, point.y, point.x + 1, point.y + perpendicularSlope)
+		);
+		return intersection.subtract(point).magnitude;
+	}
 }
 
 testing.addUnit("Line constructor", {
@@ -117,5 +132,25 @@ testing.addUnit("Line.angle()", {
 		const line = new Line(0, 0, 1, -1);
 		const angle = line.angle();
 		expect(angle).toApproximatelyEqual(45);
+	}
+});
+testing.addUnit("Line.distanceFrom()", {
+	"correctly returns the distance between the line and the point": () => {
+		const line = new Line(0, 0, 1, 1);
+		const point = new Vector(1, -3);
+		const distance = line.distanceFrom(point);
+		expect(distance).toApproximatelyEqual(2 * Math.SQRT2);
+	},
+	"works for vertical lines": () => {
+		const line = new Line(2, 0, 2, 1);
+		const point = new Vector(-1, 5);
+		const distance = line.distanceFrom(point);
+		expect(distance).toApproximatelyEqual(3);
+	},
+	"works for horizontal lines": () => {
+		const line = new Line(0, 0, 2, 0);
+		const point = new Vector(-3, -4);
+		const distance = line.distanceFrom(point);
+		expect(distance).toEqual(4);
 	}
 });
