@@ -270,13 +270,13 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 	},
 	"works for equal-mass objects colliding elastically in two dimensions": () => {
 		const obj1 = new PhysicsObject({
-			shape: new Circle(0, 0, Math.SQRT_2),
+			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(-1, -1),
 			velocity: new Vector(1, 1),
 			elasticity: 1
 		});
 		const obj2 = new PhysicsObject({
-			shape: new Circle(0, 0, Math.SQRT_2),
+			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(1, 1),
 			velocity: new Vector(-1, -1),
 			elasticity: 1
@@ -288,7 +288,7 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 	},
 	"works for unequal-mass objects colliding elastically in two dimensions": () => {
 		const obj1 = new PhysicsObject({
-			shape: new Circle(0, 0, Math.SQRT_2),
+			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(-1, -1),
 			velocity: new Vector(1, 1),
 			mass: 2,
@@ -296,7 +296,7 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 
 		});
 		const obj2 = new PhysicsObject({
-			shape: new Circle(0, 0, Math.SQRT_2),
+			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(1, 1),
 			velocity: new Vector(-1, -1),
 			elasticity: 1
@@ -308,13 +308,13 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 	},
 	"works for equal-mass objects colliding non-elastically in two dimensions": () => {
 		const obj1 = new PhysicsObject({
-			shape: new Circle(0, 0, Math.SQRT_2),
+			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(-1, -1),
 			velocity: new Vector(1, 1),
 			elasticity: 0
 		});
 		const obj2 = new PhysicsObject({
-			shape: new Circle(0, 0, Math.SQRT_2),
+			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(1, 1),
 			velocity: new Vector(-1, -1),
 			elasticity: 0
