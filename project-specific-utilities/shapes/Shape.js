@@ -56,14 +56,14 @@ class Shape {
 	static lineIntersectsLine(line1, line2) {
 		return Shape.lineIntersection(line1, line2) !== null;
 	}
-	static lineIntersectsSegment(line, segment) {
+	static lineIntersectsSegment(line, segment, tolerance = 1e-10) {
 		const intersection = Shape.lineIntersection(line, new Line(segment));
 		if(intersection === Infinity) { return true; }
 		else if(intersection === null) { return false; }
 		else {
 			return (
-				(Math.min(segment.endpoint1.x, segment.endpoint2.x) <= intersection.x && intersection.x <= Math.max(segment.endpoint1.x, segment.endpoint2.x)) &&
-				(Math.min(segment.endpoint1.y, segment.endpoint2.y) <= intersection.y && intersection.y <= Math.max(segment.endpoint1.y, segment.endpoint2.y))
+				(Math.min(segment.endpoint1.x, segment.endpoint2.x) - intersection.x <= tolerance && intersection.x - Math.max(segment.endpoint1.x, segment.endpoint2.x) <= tolerance) &&
+				(Math.min(segment.endpoint1.y, segment.endpoint2.y) - intersection.y <= tolerance && intersection.y - Math.max(segment.endpoint1.y, segment.endpoint2.y) <= tolerance)
 			);
 		}
 	}
@@ -86,7 +86,7 @@ class Shape {
 		}
 		return false;
 	}
-	static segmentIntersectsSegment(segment1, segment2) {
+	static segmentIntersectsSegment(segment1, segment2, tolerance = 1e-10) {
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return false; }
 		else if(intersection === Infinity) {
@@ -97,10 +97,10 @@ class Shape {
 		}
 		else {
 			return (
-				(Math.min(segment1.endpoint1.x, segment1.endpoint2.x) <= intersection.x && intersection.x <= Math.max(segment1.endpoint1.x, segment1.endpoint2.x)) &&
-				(Math.min(segment1.endpoint1.y, segment1.endpoint2.y) <= intersection.y && intersection.y <= Math.max(segment1.endpoint1.y, segment1.endpoint2.y)) &&
-				(Math.min(segment2.endpoint1.x, segment2.endpoint2.x) <= intersection.x && intersection.x <= Math.max(segment2.endpoint1.x, segment2.endpoint2.x)) &&
-				(Math.min(segment2.endpoint1.y, segment2.endpoint2.y) <= intersection.y && intersection.y <= Math.max(segment2.endpoint1.y, segment2.endpoint2.y))
+				(Math.min(segment1.endpoint1.x, segment1.endpoint2.x) - intersection.x <= tolerance && intersection.x - Math.max(segment1.endpoint1.x, segment1.endpoint2.x) <= tolerance) &&
+				(Math.min(segment1.endpoint1.y, segment1.endpoint2.y) - intersection.y <= tolerance && intersection.y - Math.max(segment1.endpoint1.y, segment1.endpoint2.y) <= tolerance) &&
+				(Math.min(segment2.endpoint1.x, segment2.endpoint2.x) - intersection.x <= tolerance && intersection.x - Math.max(segment2.endpoint1.x, segment2.endpoint2.x) <= tolerance) &&
+				(Math.min(segment2.endpoint1.y, segment2.endpoint2.y) - intersection.y <= tolerance && intersection.y - Math.max(segment2.endpoint1.y, segment2.endpoint2.y) <= tolerance)
 			);
 		}
 	}
@@ -315,6 +315,12 @@ testing.addUnit("Shape.circleIntersectsPolygon()", {
 		);
 		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
 		expect(intersect).toEqual(true);
+	},
+	"correctly handles inputs that result in floating-point inaccuracies": () => {
+		const circle = new Circle(222, 261, 50);
+		const polygon = new Polygon(315.5, 411, 415.5, 411, 365.5, 211);
+		const intersect = Shape.circleIntersectsPolygon(circle, polygon);
+		expect(intersect).toEqual(false);
 	}
 });
 testing.addUnit("Shape.lineIntersectsLine()", {
@@ -355,6 +361,14 @@ testing.addUnit("Shape.lineIntersectsSegment()", {
 		const segment = new Segment(0, 0, 1, 1);
 		const intersect = Shape.lineIntersectsSegment(line, segment);
 		expect(intersect).toEqual(false);
+	},
+	"can use a tolerance value when checking if the intersection is in the valid range": () => {
+		const line = new Line(0, 3, 4, 3);
+		const segment = new Segment(0, 0, 2, 2);
+		const intersect1 = Shape.lineIntersectsSegment(line, segment);
+		const intersect2 = Shape.lineIntersectsSegment(line, segment, 2);
+		expect(intersect1).toEqual(false);
+		expect(intersect2).toEqual(true);
 	}
 });
 testing.addUnit("Shape.lineIntersectsPolygon()", {
@@ -401,6 +415,14 @@ testing.addUnit("Shape.segmentIntersectsSegment()", {
 		const segment2 = new Segment(2, 0, 3, 0);
 		const intersect = Shape.segmentIntersectsSegment(segment1, segment2);
 		expect(intersect).toEqual(false);
+	},
+	"can use a tolerance value when checking if the intersection is in the valid range": () => {
+		const segment1 = new Segment(0, 0, 2, 2);
+		const segment2 = new Segment(0, 3, 4, 3);
+		const intersect1 = Shape.segmentIntersectsSegment(segment1, segment2);
+		const intersect2 = Shape.segmentIntersectsSegment(segment1, segment2, 2);
+		expect(intersect1).toEqual(false);
+		expect(intersect2).toEqual(true);
 	}
 });
 testing.addUnit("Shape.polygonIntersectsSegment()", {
