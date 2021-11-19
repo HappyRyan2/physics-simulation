@@ -54,6 +54,25 @@ const scenarios = [
 		}
 	},
 	{
+		name: "2d-collision",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(0, height * 1/4),
+					velocity: new Vector(3, 0),
+					elasticity: 0.5
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(width / 2, height * 1/4 + 75),
+					elasticity: 0.5
+				}),
+			]);
+		}
+	},
+	{
 		name: "bouncing-ball",
 		load: () => {
 			const { width, height } = app.canvasIO.canvas;
@@ -76,4 +95,4 @@ const scenarios = [
 		}
 	}
 ];
-scenarios[1].load();
+scenarios[2].load();
