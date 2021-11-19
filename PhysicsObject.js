@@ -101,26 +101,16 @@ class PhysicsObject {
 
 		/* approximate the point of collision as being halfway between the centers */
 		const pointOfIntersection = this.position.add(physicsObject.position).divide(2);
-		const tangentialVector = physicsObject.position.subtract(this.position);
-		tangentialVector.angle += 90;
 		const normalVector = physicsObject.position.subtract(this.position);
 
-		const tangentialForce = PhysicsObject.collisionForce1D(
-			this.velocity.scalarProjection(tangentialVector),
-			physicsObject.velocity.scalarProjection(tangentialVector),
-			this.inertialMass, physicsObject.inertialMass,
-			restitutionCoef
-		);
 		const normalForce = PhysicsObject.collisionForce1D(
 			this.velocity.scalarProjection(normalVector),
 			physicsObject.velocity.scalarProjection(normalVector),
 			this.inertialMass, physicsObject.inertialMass,
 			restitutionCoef
 		);
-		tangentialForce.angle += tangentialVector.angle;
 		normalForce.angle += normalVector.angle;
 		return normalForce;
-		// return tangentialForce.add(normalForce);
 	}
 	static collisionForce1D(velocity1, velocity2, mass1, mass2, restitutionCoef) {
 		const resultVelocity = (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
