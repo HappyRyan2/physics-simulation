@@ -2,6 +2,7 @@ class App {
 	constructor() {
 		this.physicsWorld = new PhysicsWorld();
 		this.fps = 60;
+		this.frameCount = 0;
 		this.canvasIO = new CanvasIO();
 	}
 	initialize() {
@@ -17,6 +18,7 @@ class App {
 	}
 	update() {
 		this.physicsWorld.update();
+		this.frameCount ++;
 	}
 }
 
