@@ -73,6 +73,27 @@ const scenarios = [
 		}
 	},
 	{
+		name: "2d-collision-with-rotation",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Polygon([
+						new Vector(-50, 50),
+						new Vector(50, 50),
+						new Vector(0, -150),
+					]),
+					position: new Vector(width / 2, height / 2)
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(0, height / 2 - 100),
+					velocity: new Vector(3, 0)
+				})
+			]);
+		}
+	},
+	{
 		name: "bouncing-ball",
 		load: () => {
 			const { width, height } = app.canvasIO.canvas;
@@ -95,4 +116,4 @@ const scenarios = [
 		}
 	}
 ];
-scenarios[2].load();
+scenarios[3].load();
