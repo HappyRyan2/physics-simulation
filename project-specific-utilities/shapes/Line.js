@@ -39,6 +39,10 @@ class Line extends Shape {
 		result.endpoint2.angle += angle;
 		return result;
 	}
+
+	angle() {
+		return this.endpoint2.subtract(this.endpoint1).angle;
+	}
 }
 
 testing.addUnit("Line constructor", {
@@ -101,5 +105,17 @@ testing.addUnit("Line.rotate()", {
 		const line = new Line(0, 0, 1, 1);
 		const rotated = line.rotate(90);
 		expect(line).toEqual(new Line(0, 0, 1, 1));
+	}
+});
+testing.addUnit("Line.angle()", {
+	"correctly returns the angle of a 0-degree line": () => {
+		const line = new Line(0, 0, 1, 0);
+		const angle = line.angle();
+		expect(angle).toApproximatelyEqual(0);
+	},
+	"correctly returns the angle of a 45-degree line": () => {
+		const line = new Line(0, 0, 1, -1);
+		const angle = line.angle();
+		expect(angle).toApproximatelyEqual(45);
 	}
 });
