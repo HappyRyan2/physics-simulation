@@ -150,6 +150,94 @@ class Shape {
 		const yIntersection = xIntersection * slope1 + yIntercept1;
 		return new Vector(xIntersection, yIntersection);
 	}
+	static segmentIntersection(segment1, segment2, tolerance = 1e-10) {
+		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
+		if(intersection === null) { return null; }
+		else if(intersection === Infinity) {
+			return (
+				Math.max(segment1.endpoint1.x, segment1.endpoint2.x) >= Math.min(segment2.endpoint1.x, segment2.endpoint2.x) &&
+				Math.max(segment1.endpoint1.y, segment1.endpoint2.y) >= Math.min(segment2.endpoint1.y, segment2.endpoint2.y)
+			) ? intersection : null;
+		}
+		else {
+			return (
+				(Math.min(segment1.endpoint1.x, segment1.endpoint2.x) - intersection.x <= tolerance && intersection.x - Math.max(segment1.endpoint1.x, segment1.endpoint2.x) <= tolerance) &&
+				(Math.min(segment1.endpoint1.y, segment1.endpoint2.y) - intersection.y <= tolerance && intersection.y - Math.max(segment1.endpoint1.y, segment1.endpoint2.y) <= tolerance) &&
+				(Math.min(segment2.endpoint1.x, segment2.endpoint2.x) - intersection.x <= tolerance && intersection.x - Math.max(segment2.endpoint1.x, segment2.endpoint2.x) <= tolerance) &&
+				(Math.min(segment2.endpoint1.y, segment2.endpoint2.y) - intersection.y <= tolerance && intersection.y - Math.max(segment2.endpoint1.y, segment2.endpoint2.y) <= tolerance)
+			) ? intersection : null;
+		}
+	}
+
+	static circleLineIntersections(circle, line) {
+		if(line.endpoint1.x === line.endpoint2.x) {
+			const lineX = line.endpoint1.x;
+			if(circle.position.x - circle.radius <= lineX && lineX <= circle.position.x + circle.radius) {
+				const yDist = Math.sqrt(circle.radius ** 2 - (circle.position.x - lineX) ** 2);
+				return [
+					new Vector(lineX, circle.position.y + yDist),
+					new Vector(lineX, circle.position.y - yDist),
+				];
+			}
+			else { return []; }
+		}
+		const slope = line.slope();
+		const intercept = line.yIntercept();
+		const radius = circle.radius;
+		const coefA = 1 + slope ** 2;
+		const coefB = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x);
+		const coefC = (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * intercept * circle.position.y);
+		const discriminant = (coefB ** 2) - (4 * coefA * coefC);
+		if(discriminant < 0) { return []; }
+		else if(discriminant === 0) {
+			const x = -coefB / (2 * coefA);
+			const y = slope * x + intercept;
+			return [ new Vector(x, y) ];
+		}
+		else {
+			const x1 = (-coefB + Math.sqrt(discriminant)) / (2 * coefA);
+			const x2 = (-coefB - Math.sqrt(discriminant)) / (2 * coefA);
+			const y1 = slope * x1 + intercept;
+			const y2 = slope * x2 + intercept;
+			return [ new Vector(x1, y1), new Vector(x2, y2) ];
+		}
+	}
+	static circleSegmentIntersections(circle, segment, tolerance = 1e-10) {
+		const intersections = Shape.circleLineIntersections(circle, new Line(segment));
+
+		const left = Math.min(segment.endpoint1.x, segment.endpoint2.x);
+		const right = Math.max(segment.endpoint1.x, segment.endpoint2.x);
+		const top = Math.min(segment.endpoint1.y, segment.endpoint2.y);
+		const bottom = Math.max(segment.endpoint1.y, segment.endpoint2.y);
+
+		return intersections.filter(({ x, y }) => (
+			(left - x <= tolerance && x - right <= tolerance) &&
+			(top - y <= tolerance && y - bottom <= tolerance)
+		));
+	}
+	static circlePolygonIntersections(circle, polygon) {
+		let intersections = [];
+		for(const edge of polygon.edges()) {
+			for(const intersection of Shape.circleSegmentIntersections(circle, edge)) {
+				if(!intersections.some(e => e.equals(intersection))) {
+					intersections.push(intersection);
+				}
+			}
+		}
+		return intersections;
+	}
+	static polygonIntersections(polygon1, polygon2) {
+		const intersections = [];
+		for(const edge1 of polygon1.edges()) {
+			for(const edge2 of polygon2.edges()) {
+				const intersection = Shape.segmentIntersection(edge1, edge2);
+				if(intersection instanceof Vector && !intersections.some(e => e.equals(intersection))) {
+					intersections.push(intersection);
+				}
+			}
+		}
+		return intersections;
+	}
 }
 
 
@@ -527,5 +615,82 @@ testing.addUnit("Shape.lineIntersection()", {
 		const line2 = new Line(10, 20, 11, 21);
 		const intersection = Shape.lineIntersection(line1, line2);
 		expect(intersection).toEqual(new Vector(0, 10));
+	}
+});
+testing.addUnit("Circle.circleLineIntersections()", {
+	"correctly returns the points of intersection": () => {
+		const circle = new Circle(3, 2, 5);
+		const line = new Line(4, 4, 8, 8);
+		const intersections = Shape.circleLineIntersections(circle, line);
+		expect(intersections).toEqual([ new Vector(6, 6), new Vector(-1, -1) ]);
+	},
+	"returns an empty array when the circle and the line do not intersect": () => {
+		const circle = new Circle(3, 2, 5);
+		const line = new Line(0, 8, 1, 9);
+		const intersections = Shape.circleLineIntersections(circle, line);
+		expect(intersections).toEqual([]);
+	},
+	"correctly returns the points of intersection for vertical lines": () => {
+		const circle = new Circle(0, 0, 13);
+		const line = new Line(5, 0, 5, 1);
+		const intersections = Shape.circleLineIntersections(circle, line);
+		expect(intersections).toEqual([ new Vector(5, 12), new Vector(5, -12) ]);
+	},
+	"returns an empty array for vertical lines that do not intersect the circle": () => {
+		const circle = new Circle(0, 0, 13);
+		const line = new Line(100, 1, 100, 2);
+		const intersections = Shape.circleLineIntersections(circle, line);
+		expect(intersections).toEqual([  ]);
+	}
+});
+testing.addUnit("Shape.circleSegmentIntersections()", {
+	"correctly returns the points of intersection": () => {
+		const circle = new Circle(3, 2, 5);
+		const segment = new Segment(4, 4, 8, 8);
+		const intersections = Shape.circleSegmentIntersections(circle, segment);
+		expect(intersections).toEqual([ new Vector(6, 6) ]);
+	}
+});
+testing.addUnit("Shape.circlePolygonIntersections()", {
+	"correctly returns the points of intersection": () => {
+		const circle = new Circle(3, 2, 5);
+		const polygon = new Polygon(6, 2, 6, 8, 10, 8, 10, 2);
+		const intersections = Shape.circlePolygonIntersections(circle, polygon);
+		expect(intersections).toEqual([ new Vector(6, 6), new Vector(8, 2) ]);
+	}
+});
+testing.addUnit("Shape.segmentIntersection()", {
+	"correctly returns the intersection of the line segments": () => {
+		const segment1 = new Segment(0, 0, 3, 3);
+		const segment2 = new Segment(0, 2, 2, 0);
+		const intersection = Shape.segmentIntersection(segment1, segment2);
+		expect(intersection).toEqual(new Vector(1, 1));
+	},
+	"returns an empty array when there are no intersections": () => {
+		const segment1 = new Segment(0, 0, 1, 1);
+		const segment2 = new Segment(0, 3, 3, 0);
+		const intersection = Shape.segmentIntersection(segment1, segment2);
+		expect(intersection).toEqual(null);
+	}
+});
+testing.addUnit("Shape.polygonIntersections()", {
+	"correctly returns the intersections of the polygons": () => {
+		const polygon1 = new Polygon([
+			new Vector(0, 0),
+			new Vector(0, 2),
+			new Vector(2, 2),
+			new Vector(2, 0)
+		]);
+		const polygon2 = new Polygon([
+			new Vector(1, 1),
+			new Vector(1, 3),
+			new Vector(3, 3),
+			new Vector(3, 1)
+		]);
+		const intersections = Shape.polygonIntersections(polygon1, polygon2);
+		expect(intersections).toEqual([
+			new Vector(1, 2),
+			new Vector(2, 1)
+		]);
 	}
 });
