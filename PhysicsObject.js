@@ -106,9 +106,8 @@ class PhysicsObject {
 	collisionForce(physicsObject) {
 		const restitutionCoef = (this.elasticity + physicsObject.elasticity) / 2;
 
-		/* approximate the point of collision as being halfway between the centers */
-		const pointOfIntersection = this.position.add(physicsObject.position).divide(2);
-		const normalVector = physicsObject.position.subtract(this.position);
+		const intersection = this.intersection(physicsObject);
+		const normalVector = this.normalVector(physicsObject, intersection);
 
 		const normalForce = PhysicsObject.collisionForce1D(
 			this.velocity.scalarProjection(normalVector),
