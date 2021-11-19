@@ -89,7 +89,8 @@ class PhysicsObject {
 		);
 		tangentialForce.angle += tangentialVector.angle;
 		normalForce.angle += normalVector.angle;
-		return tangentialForce.add(normalForce);
+		return normalForce;
+		// return tangentialForce.add(normalForce);
 	}
 	static collisionForce1D(velocity1, velocity2, mass1, mass2, restitutionCoef) {
 		const resultVelocity = (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
