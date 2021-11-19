@@ -281,7 +281,7 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 	"works for equal-mass objects colliding non-elastically in two dimensions": () => {
 		const obj1 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT_2),
-			position: new Vector(1, -1),
+			position: new Vector(-1, -1),
 			velocity: new Vector(1, 1),
 			elasticity: 0
 		});
@@ -306,7 +306,7 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
-			velocity: new Vector(0),
+			velocity: new Vector(0, 0),
 			elasticity: 1
 		});
 
