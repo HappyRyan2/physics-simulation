@@ -90,7 +90,9 @@ class PhysicsObject {
 		else {
 			const polygon = [shape1, shape2].find(s => s instanceof Polygon);
 			const edge = polygon.closestEdge(intersection);
-			return edge.endpoint1.subtract(edge.endpoint2);
+			const result = edge.endpoint1.subtract(edge.endpoint2);
+			result.angle += 90;
+			return result;
 		}
 		return [intersection, normalVector];
 	}
@@ -394,7 +396,7 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			shape: new Polygon(1, 0, 6, 5, 6, -5)
 		});
 		const normalVector = circle.normalVector(polygon, new Vector(4, 0));
-		expect(normalVector.angle).toEqual(-90); // 90 / -90
+		expect(normalVector.angle).toEqual(0); // 0 / -180
 	},
 	"returns the correct result for two polygons": () => {
 		const polygon1 = new PhysicsObject({
@@ -404,7 +406,7 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3)
 		});
 		const normalVector = polygon1.normalVector(polygon2, new Vector(4, 0));
-		expect(normalVector.angle).toEqual(90); // 90 or -90
+		expect(normalVector.angle).toEqual(180); // 0 / 180 / -180
 	}
 });
 testing.addUnit("PhysicsObject collisions", {
