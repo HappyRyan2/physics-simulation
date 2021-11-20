@@ -168,7 +168,7 @@ testing.addUnit("PhysicsObject.intersects()", {
 				-1, -1,
 				0, 100
 			),
-			rotation: -90
+			rotation: 90
 		});
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
