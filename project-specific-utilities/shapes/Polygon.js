@@ -70,6 +70,15 @@ class Polygon extends Shape {
 	closestEdge(point) {
 		return this.edges().min(e => e.distanceFrom(point));
 	}
+
+	static regularPolygon(numSides) {
+		let points = [];
+		for(let i = 0; i < numSides; i ++) {
+			const angle = (i * (2 * Math.PI) / numSides);
+			points.push(new Vector(Math.cos(angle), Math.sin(angle)));
+		}
+		return new Polygon(points);
+	}
 }
 
 testing.addUnit("Polygon constructor", {
@@ -176,5 +185,16 @@ testing.addUnit("Polygon.closestEdge()", {
 		const point = new Vector(5, 2);
 		const edge = polygon.closestEdge(point);
 		expect(edge).toEqual(polygon.edges()[1]);
+	}
+});
+testing.addUnit("Polygon.regularPolygon()", {
+	"can generate an equilateral triangle": () => {
+		const polygon = Polygon.regularPolygon(3);
+		expect(polygon.vertices[0].x).toApproximatelyEqual(1);
+		expect(polygon.vertices[0].y).toApproximatelyEqual(0);
+		expect(polygon.vertices[1].x).toApproximatelyEqual(-1/2);
+		expect(polygon.vertices[1].y).toApproximatelyEqual(Math.sqrt(3) / 2);
+		expect(polygon.vertices[2].x).toApproximatelyEqual(-1/2);
+		expect(polygon.vertices[2].y).toApproximatelyEqual(-Math.sqrt(3) / 2);
 	}
 });
