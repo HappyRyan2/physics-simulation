@@ -16,6 +16,8 @@ class PhysicsObject {
 		this.overlappedObjects = [];
 	}
 
+	static ROTATION_CONSTANT = 2e-4;
+
 	updateVelocity() {
 		this.velocity = this.velocity.add(this.acceleration);
 		this.angularVelocity += this.angularAcceleration;
@@ -44,6 +46,7 @@ class PhysicsObject {
 		let torque = force.magnitude;
 		torque *= position.subtract(this.position).magnitude;
 		torque *= Math.sin(TO_RADIANS * (force.angle - position.angle));
+		torque *= PhysicsObject.ROTATION_CONSTANT;
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
 
