@@ -14,37 +14,10 @@ class Shape {
 		return discriminant >= 0;
 	}
 	static circleIntersectsSegment(circle, segment) {
-		if(segment.endpoint1.x === segment.endpoint2.x) {
-			if(Math.dist(segment.endpoint1.x, circle.position.x) > circle.radius) {
-				return false;
-			}
-			const x = segment.endpoint1.x;
-			const y1 = segment.endpoint1.y;
-			const y2 = segment.endpoint2.y;
-			const circleY1 = circle.position.y + Math.sqrt(circle.radius ** 2 - x ** 2);
-			const circleY2 = circle.position.y - Math.sqrt(circle.radius ** 2 - x ** 2);
-			return !(
-				(y1 > circleY1 && y2 > circleY1) ||
-				(y1 < circleY2 && y2 < circleY2)
-			);
-		}
-		const radius = circle.radius;
-		if(segment.endpoint1.subtract(circle.position).magnitude <= radius) {
-			return true;
-		}
-		const slope = new Line(segment).slope();
-		const intercept = new Line(segment).yIntercept();
-		const discriminant = (2 * slope * intercept - 2 * slope * circle.position.y - 2 * circle.position.x) ** 2 - 4 * (1 + slope ** 2) * (intercept ** 2 + circle.position.x ** 2 + circle.position.y ** 2 - radius ** 2 - 2 * intercept * circle.position.y);
-		if(discriminant < 0) {
-			return false;
-		}
-		const xIntersection1 = ((-2 * slope * intercept) + Math.sqrt(discriminant)) / (2 * (slope ** 2 + 1));
-		const xIntersection2 = ((-2 * slope * intercept) - Math.sqrt(discriminant)) / (2 * (slope ** 2 + 1));
-		const minX = Math.min(segment.endpoint1.x, segment.endpoint2.x);
-		const maxX = Math.max(segment.endpoint1.x, segment.endpoint2.x);
+		const intersections = Shape.circleSegmentIntersections(circle, segment);
 		return (
-			(minX <= xIntersection1 && xIntersection1 <= maxX) ||
-			(minX <= xIntersection2 && xIntersection2 <= maxX)
+			intersections.length !== 0 ||
+			circle.position.subtract(segment.endpoint1).magnitude <= circle.radius
 		);
 	}
 	static circleIntersectsPolygon(circle, polygon) {
@@ -350,6 +323,12 @@ testing.addUnit("Shape.circleIntersectsSegment()", {
 	"returns true when the circle and the segment intersect and the circle is not centered at the origin": () => {
 		const circle = new Circle(50, 0, 5);
 		const segment = new Segment(0, 2, 100, 2);
+		const intersect = Shape.circleIntersectsSegment(circle, segment);
+		expect(intersect).toEqual(true);
+	},
+	"returns true when the circle and the segment intersect and the circle is not centered at the origin - test case 2": () => {
+		const circle = new Circle(309, 261, 50);
+		const segment = new Segment(315.5, 411, 365.5, 211);
 		const intersect = Shape.circleIntersectsSegment(circle, segment);
 		expect(intersect).toEqual(true);
 	},
