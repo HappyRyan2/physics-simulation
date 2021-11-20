@@ -99,8 +99,8 @@ class PhysicsObject {
 	checkForCollisions(physicsObject, intersects = this.intersects(physicsObject)) {
 		if(this.shouldCollide(physicsObject, intersects)) {
 			const force = this.collisionForce(physicsObject);
-			this.applyForce(force);
-			physicsObject.applyForce(force.multiply(-1));
+			this.applyForce(force, this.intersection(physicsObject));
+			physicsObject.applyForce(force.multiply(-1), this.intersection(physicsObject));
 		}
 	}
 
