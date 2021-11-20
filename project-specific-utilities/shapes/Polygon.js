@@ -66,6 +66,9 @@ class Polygon extends Shape {
 		}
 		return polygon;
 	}
+	scale(scalar) {
+		return new Polygon(this.vertices.map(vector => vector.multiply(scalar)));
+	}
 
 	closestEdge(point) {
 		return this.edges().min(e => e.distanceFrom(point));
@@ -172,6 +175,26 @@ testing.addUnit("Polygon.rotate()", {
 		const polygon = new Polygon(-1, -1, 1, -1, 0, 2);
 		const rotated = polygon.rotate(90);
 		expect(polygon).toEqual(new Polygon(-1, -1, 1, -1, 0, 2));
+	}
+});
+testing.addUnit("Polygon.scale()", {
+	"correctly scales the polygon": () => {
+		const polygon = new Polygon(1, 2, 3, 4, 5, 6);
+		const scaled = polygon.scale(100);
+		expect(scaled.vertices).toEqual([
+			new Vector(100, 200),
+			new Vector(300, 400),
+			new Vector(500, 600)
+		]);
+	},
+	"does not modify the original polygon": () => {
+		const polygon = new Polygon(1, 2, 3, 4, 5, 6);
+		const scaled = polygon.scale(100);
+		expect(polygon.vertices).toEqual([
+			new Vector(1, 2),
+			new Vector(3, 4),
+			new Vector(5, 6)
+		]);
 	}
 });
 testing.addUnit("Polygon.closestEdge()", {
