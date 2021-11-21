@@ -131,10 +131,11 @@ const scenarios = [
 						new Vector(-width / 2, height * 1/16),
 					]),
 					position: new Vector(width / 2, height * 15/16),
-					antigravity: true
+					antigravity: true,
+					immovable: true
 				})
 			], 0.1);
 		}
 	}
 ];
-scenarios[4].load();
+scenarios[5].load();

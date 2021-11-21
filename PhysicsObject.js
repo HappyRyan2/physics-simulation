@@ -12,6 +12,7 @@ class PhysicsObject {
 		this.rotationalInertia = properties.rotationalInertia ?? properties.mass ?? 1; // TODO: add calculations for rotational inertia
 		this.elasticity = properties.elasticity ?? 0;
 		this.antigravity = properties.antigravity ?? false;
+		this.immovable = properties.immovable ?? false;
 
 		this.overlappedObjects = [];
 	}
@@ -19,8 +20,10 @@ class PhysicsObject {
 	static ROTATION_CONSTANT = 2e-4;
 
 	updateVelocity() {
-		this.velocity = this.velocity.add(this.acceleration);
-		this.angularVelocity += this.angularAcceleration;
+		if(!this.immovable) {
+			this.velocity = this.velocity.add(this.acceleration);
+			this.angularVelocity += this.angularAcceleration;
+		}
 		this.acceleration = new Vector();
 		this.angularAcceleration = 0;
 	}
@@ -126,10 +129,12 @@ class PhysicsObject {
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject, intersection);
 
+		const LARGE_NUMBER = 1e6;
 		const normalForce = PhysicsObject.collisionForce1D(
 			this.velocity.scalarProjection(normalVector),
 			physicsObject.velocity.scalarProjection(normalVector),
-			this.inertialMass, physicsObject.inertialMass,
+			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
+			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			restitutionCoef
 		);
 		normalForce.angle += normalVector.angle;

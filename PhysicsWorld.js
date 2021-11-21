@@ -43,8 +43,8 @@ class PhysicsWorld {
 	update() {
 		this.applyGravity();
 		for(const obj of this.objects) {
-			obj.updateVelocity();
 			obj.updatePosition();
+			obj.updateVelocity();
 		}
 		this.applyCollisions();
 		for(const obj of this.objects) {
