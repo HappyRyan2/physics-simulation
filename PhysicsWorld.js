@@ -1,4 +1,6 @@
 class PhysicsWorld {
+	static BREAK_ON_COLLISION = true;
+
 	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
 		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
@@ -20,6 +22,9 @@ class PhysicsWorld {
 				const intersects = obj1.intersects(obj2);
 				obj1.checkForCollisions(obj2, intersects);
 				if(intersects) {
+					if(PhysicsWorld.BREAK_ON_COLLISION && app.frameCount > 1) {
+						debugger;
+					}
 					newIntersections.push([obj1, obj2]);
 				}
 			}
