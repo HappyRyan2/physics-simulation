@@ -9,7 +9,7 @@ class PhysicsWorld {
 	applyGravity() {
 		for(const obj of this.objects) {
 			if(!obj.antigravity) {
-				obj.applyForce(new Vector(0, this.gravitationalAcceleration));
+				obj.applyForce(new Vector(0, obj.inertialMass * this.gravitationalAcceleration));
 			}
 		}
 	}

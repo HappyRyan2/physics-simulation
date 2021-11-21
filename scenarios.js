@@ -124,6 +124,11 @@ const scenarios = [
 					position: new Vector(width / 2, height / 2)
 				}),
 				new PhysicsObject({
+					shape: new Circle(0, 0, 50),
+					position: new Vector(width / 2 - 150, height / 2),
+					mass: 100
+				}),
+				new PhysicsObject({
 					shape: new Polygon([
 						new Vector(-width / 2, -height * 1/16),
 						new Vector(width / 2, -height * 1/16),
