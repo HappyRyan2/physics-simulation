@@ -50,8 +50,8 @@ class PhysicsObject {
 		const perpendicularVector = new Vector(force);
 		perpendicularVector.angle += 90;
 		let torque = force.magnitude;
-		torque *= Math.abs(position.subtract(this.position).scalarProjection(perpendicularVector));
-		torque *= Math.sin(TO_RADIANS * (force.angle - position.subtract(this.position).angle));
+		torque *= position.subtract(this.position).magnitude;
+		torque *= Math.sin(TO_RADIANS * (position.subtract(this.position).angle - force.angle));
 		torque *= PhysicsObject.ROTATION_CONSTANT;
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
@@ -154,6 +154,7 @@ class PhysicsObject {
 		c.strokeStyle = "red";
 		c.fillCircle(intersection.x, intersection.y, 5);
 		const normalLine = new Line(intersection, intersection.add(normalVector));
+		c.lineWidth = 3;
 		normalLine.display();
 	}
 }
