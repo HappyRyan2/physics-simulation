@@ -96,7 +96,11 @@ class PhysicsObject {
 			return shape1.position.subtract(shape2.position);
 		}
 		else {
-			const polygon = [shape1, shape2].find(s => s instanceof Polygon);
+			const polygon = (
+				[shape1, shape2]
+				.filter(v => v instanceof Polygon)
+				.max(poly => poly.vertices.min(vertex => vertex.subtract(intersection).magnitude, null, "value"))
+			);
 			const edge = polygon.closestEdge(intersection);
 			const result = edge.endpoint1.subtract(edge.endpoint2);
 			result.angle += 90;

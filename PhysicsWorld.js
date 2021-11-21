@@ -1,5 +1,5 @@
 class PhysicsWorld {
-	static BREAK_ON_COLLISION = true;
+	static BREAK_ON_COLLISION = false;
 
 	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
