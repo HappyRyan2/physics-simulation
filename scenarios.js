@@ -141,6 +141,36 @@ const scenarios = [
 				})
 			], 0.1);
 		}
+	},
+	{
+		name: "falling-rectangle",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Polygon([
+						new Vector(-width / 2, -height * 1/16),
+						new Vector(width / 2, -height * 1/16),
+						new Vector(width / 2, height * 1/16),
+						new Vector(-width / 2, height * 1/16),
+					]),
+					position: new Vector(width / 2, height * 15/16),
+					antigravity: true,
+					immovable: true,
+					elasticity: 0
+				}),
+				new PhysicsObject({
+					shape: new Polygon(
+						-50, -10,
+						50, -10,
+						50, 10,
+						-50, 10
+					).rotate(45),
+					position: new Vector(width / 2, height / 2),
+					elasticity: 0
+				})
+			], 0.1);
+		}
 	}
 ];
-scenarios[5].load();
+scenarios[6].load();
