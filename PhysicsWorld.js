@@ -20,13 +20,15 @@ class PhysicsWorld {
 			for(let j = i + 1; j < this.objects.length; j ++) {
 				const obj2 = this.objects[j];
 				const intersects = obj1.intersects(obj2);
-				obj1.checkForCollisions(obj2, intersects);
 				if(intersects) {
 					if(PhysicsWorld.BREAK_ON_COLLISION && app.frameCount > 1) {
+						this.display(app.canvasIO.ctx); // update screen with latest positions
+						obj1.displayCollisionInfo(obj2);
 						debugger;
 					}
 					newIntersections.push([obj1, obj2]);
 				}
+				obj1.checkForCollisions(obj2, intersects);
 			}
 		}
 		for(const obj of this.objects) {

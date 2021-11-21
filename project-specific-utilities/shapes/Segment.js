@@ -79,6 +79,13 @@ class Segment extends Shape {
 			this.endpoint2.subtract(point).magnitude
 		);
 	}
+
+	display(c = app.canvasIO.ctx) {
+		const ENDPOINT_RADIUS = 5;
+		c.fillCircle(this.endpoint1.x, this.endpoint1.y, ENDPOINT_RADIUS);
+		c.fillCircle(this.endpoint2.x, this.endpoint2.y, ENDPOINT_RADIUS);
+		c.strokeLine(this.endpoint1, this.endpoint2);
+	}
 }
 
 testing.addUnit("Segment constructor", {

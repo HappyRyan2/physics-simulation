@@ -58,6 +58,19 @@ class Line extends Shape {
 		);
 		return intersection.subtract(point).magnitude;
 	}
+
+	display(c = app.canvasIO.ctx) {
+		if(this.endpoint1.x === this.endpoint2.x) {
+			const x = this.endpoint1.x;
+			c.strokeLine(x, -LENGTH, x, LENGTH);
+		}
+		const LENGTH = 1e5;
+		const slope = this.slope();
+		c.strokeLine(
+			this.endpoint1.x - LENGTH, this.endpoint1.y - LENGTH * slope,
+			this.endpoint1.x + LENGTH, this.endpoint1.y + LENGTH * slope
+		);
+	}
 }
 
 testing.addUnit("Line constructor", {

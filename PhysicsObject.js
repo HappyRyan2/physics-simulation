@@ -134,6 +134,16 @@ class PhysicsObject {
 		const forceMagnitude = changeInVelocity * mass1;
 		return new Vector({ angle: 180, magnitude: forceMagnitude });
 	}
+
+	displayCollisionInfo(physicsObject, c = app.canvasIO.ctx) {
+		const intersection = this.intersection(physicsObject);
+		const normalVector = this.normalVector(physicsObject);
+		c.fillStyle = "red";
+		c.strokeStyle = "red";
+		c.fillCircle(intersection.x, intersection.y, 5);
+		const normalLine = new Line(intersection, intersection.add(normalVector));
+		normalLine.display();
+	}
 }
 
 testing.addUnit("PhysicsObject.intersects()", {
