@@ -41,6 +41,7 @@ class PhysicsObject {
 	}
 
 	applyForce(force, position = this.position) {
+		if(force.magnitude === 0) { return; }
 		this.acceleration = this.acceleration.add(force.divide(this.inertialMass));
 		const TO_RADIANS = Math.PI / 180;
 		const perpendicularVector = new Vector(force);
