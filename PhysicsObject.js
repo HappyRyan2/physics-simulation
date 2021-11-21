@@ -45,7 +45,7 @@ class PhysicsObject {
 		const TO_RADIANS = Math.PI / 180;
 		let torque = force.magnitude;
 		torque *= position.subtract(this.position).magnitude;
-		torque *= Math.sin(TO_RADIANS * (force.angle - position.angle));
+		torque *= Math.sin(TO_RADIANS * (force.angle - position.subtract(this.position).angle));
 		torque *= PhysicsObject.ROTATION_CONSTANT;
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
