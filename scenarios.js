@@ -94,6 +94,27 @@ const scenarios = [
 		}
 	},
 	{
+		name: "polygon-polygon-collision",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: Polygon.regularPolygon(3).scale(50).rotate(90),
+					position: new Vector(width / 4, height / 4),
+					angularVelocity: 0.1,
+					velocity: new Vector(1, 1),
+					elasticity: 0.5
+				}),
+				new PhysicsObject({
+					shape: Polygon.regularPolygon(6).scale(100).rotate(90),
+					position: new Vector(width / 2, height / 2),
+					mass: 2,
+					elasticity: 0.5
+				})
+			]);
+		}
+	},
+	{
 		name: "bouncing-ball",
 		load: () => {
 			const { width, height } = app.canvasIO.canvas;
@@ -116,4 +137,4 @@ const scenarios = [
 		}
 	}
 ];
-scenarios[3].load();
+scenarios[4].load();
