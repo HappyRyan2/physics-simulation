@@ -50,9 +50,14 @@ class PhysicsObject {
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
 
+	transformedShape() {
+		const TO_DEGREES = 180 / Math.PI;
+		return this.shape.rotate(-this.rotation * TO_DEGREES).translate(this.position);
+	}
+
 	intersects(physicsObject) {
-		const shape1 = this.shape.rotate(this.rotation).translate(this.position);
-		const shape2 = physicsObject.shape.rotate(physicsObject.rotation).translate(physicsObject.position);
+		const shape1 = this.transformedShape();
+		const shape2 = physicsObject.transformedShape();
 		return shape1.intersects(shape2);
 	}
 	movingToward(physicsObject) {
@@ -68,8 +73,8 @@ class PhysicsObject {
 		return true;
 	}
 	intersection(physicsObject) {
-		const shape1 = this.shape.rotate(this.rotation).translate(this.position);
-		const shape2 = physicsObject.shape.rotate(physicsObject.rotation).translate(physicsObject.position);
+		const shape1 = this.transformedShape();
+		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
 			return shape1.position.add(shape2.position).divide(2);
 		}
@@ -85,8 +90,8 @@ class PhysicsObject {
 		}
 	}
 	normalVector(physicsObject, intersection = this.intersection(physicsObject)) {
-		const shape1 = this.shape.rotate(this.rotation).translate(this.position);
-		const shape2 = physicsObject.shape.rotate(physicsObject.rotation).translate(physicsObject.position);
+		const shape1 = this.transformedShape();
+		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
 			return shape1.position.subtract(shape2.position);
 		}
@@ -173,7 +178,7 @@ testing.addUnit("PhysicsObject.intersects()", {
 				-1, -1,
 				0, 100
 			),
-			rotation: 90
+			rotation: -Math.PI / 2
 		});
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
