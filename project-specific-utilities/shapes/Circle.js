@@ -25,10 +25,11 @@ class Circle extends Shape {
 		return result;
 	}
 
-	display(c) {
+	display(c, outlineOnly = false) {
 		c.beginPath();
 		c.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
-		c.fill();
+		if(outlineOnly) { c.stroke(); }
+		else { c.fill(); }
 	}
 }
 
