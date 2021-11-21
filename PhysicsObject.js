@@ -43,8 +43,10 @@ class PhysicsObject {
 	applyForce(force, position = this.position) {
 		this.acceleration = this.acceleration.add(force.divide(this.inertialMass));
 		const TO_RADIANS = Math.PI / 180;
+		const perpendicularVector = new Vector(force);
+		perpendicularVector.angle += 90;
 		let torque = force.magnitude;
-		torque *= position.subtract(this.position).magnitude;
+		torque *= Math.abs(position.subtract(this.position).scalarProjection(perpendicularVector));
 		torque *= Math.sin(TO_RADIANS * (force.angle - position.subtract(this.position).angle));
 		torque *= PhysicsObject.ROTATION_CONSTANT;
 		this.angularAcceleration += (torque / this.rotationalInertia);
