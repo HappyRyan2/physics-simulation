@@ -122,23 +122,44 @@ class PhysicsObject {
 		}
 	}
 
+	velocityOfPoint(point) {
+		const originalPoint = new Vector(point);
+		point = point.subtract(this.position);
+		point.angle -= this.rotation;
+		point = point.add(this.position);
+		return point.subtract(originalPoint).add(this.velocity);
+	}
+
 
 	collisionForce(physicsObject) {
+		if(this.immovable) {
+			return physicsObject.collisionForce(this).multiply(-1);
+		}
 		const restitutionCoef = (this.elasticity + physicsObject.elasticity) / 2;
 
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject, intersection);
 
 		const LARGE_NUMBER = 1e6;
-		const normalForce = PhysicsObject.collisionForce1D(
+		const resultVelocity = PhysicsObject.velocityAfterCollision(
 			this.velocity.scalarProjection(normalVector),
 			physicsObject.velocity.scalarProjection(normalVector),
 			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
 			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			restitutionCoef
 		);
-		normalForce.angle += normalVector.angle;
-		return normalForce;
+		const magnitude = utils.continuousBinarySearch((magnitude) => {
+			/* `magnitude` is assumed to be in the same direction as `normalVector`. */
+			const object = this.clone();
+			const force = new Vector({ angle: normalVector.angle, magnitude: magnitude });
+			object.applyForce(force, intersection);
+			object.updateVelocity();
+			return object.velocityOfPoint(intersection).scalarProjection(normalVector) - resultVelocity;
+		}, -Infinity, Infinity, 60);
+		return new Vector({ angle: normalVector.angle, magnitude });
+	}
+	static velocityAfterCollision(velocity1, velocity2, mass1, mass2, restitutionCoef) {
+		return (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
 	}
 	static collisionForce1D(velocity1, velocity2, mass1, mass2, restitutionCoef) {
 		const resultVelocity = (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
