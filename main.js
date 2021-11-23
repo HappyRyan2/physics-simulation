@@ -15,10 +15,19 @@ class App {
 
 	display() {
 		this.physicsWorld.display(this.canvasIO.ctx);
+		this.displayFrameCount(this.canvasIO.ctx);
 	}
 	update() {
 		this.physicsWorld.update();
 		this.frameCount ++;
+	}
+
+	displayFrameCount(c) {
+		c.textAlign = "left";
+		c.textBaseline = "top";
+		c.fillStyle = "black";
+		c.font = "20px monospace";
+		c.fillText(this.frameCount, 0, 0);
 	}
 }
 
