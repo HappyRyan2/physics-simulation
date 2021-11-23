@@ -16,6 +16,15 @@ class Line extends Shape {
 		}
 	}
 
+	rationalSlope() {
+		return new Rational(
+			this.endpoint1.y - this.endpoint2.y,
+			this.endpoint1.x - this.endpoint2.x
+		);
+	}
+	rationalYIntercept() {
+		return this.rationalSlope().multiply(new Rational(-1n, 1n)).multiply(new Rational(this.endpoint1.x)).add(new Rational(this.endpoint1.y));
+	}
 	slope() {
 		return (this.endpoint1.y - this.endpoint2.y) / (this.endpoint1.x - this.endpoint2.x);
 	}

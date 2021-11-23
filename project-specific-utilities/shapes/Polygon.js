@@ -28,7 +28,7 @@ class Polygon extends Shape {
 
 	containsPoint(vector) {
 		/* find a ray through the point that doesn't contain any of the vertices */
-		const vertices = this.vertices.sort((v1, v2) => v2.subtract(vector).angle - v1.subtract(vector).angle);
+		const vertices = [...this.vertices].sort((v1, v2) => v2.subtract(vector).angle - v1.subtract(vector).angle);
 		let line;
 		for(let i = 0; i < vertices.length - 1; i ++) {
 			const vertex = vertices[i];
@@ -142,6 +142,18 @@ testing.addUnit("Polygon.containsPoint()", {
 		);
 		const point = new Vector(0, 0);
 		expect(polygon.containsPoint(point)).toEqual(true);
+	},
+	"returns the same value when calling the method multiple times": () => {
+		const polygon = new Polygon(
+			137, 574,
+			137, 656,
+			-1.4210854715202004e-14, 656,
+			-1.4210854715202004e-14, 574
+		);
+		const point = new Vector(21.53042084303869, 556.1322673233594);
+		const result1 = polygon.containsPoint(point);
+		const result2 = polygon.containsPoint(point);
+		expect(result1).toEqual(result2);
 	}
 });
 testing.addUnit("Polygon.translate()", {

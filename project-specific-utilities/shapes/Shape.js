@@ -112,16 +112,16 @@ class Shape {
 			);
 		}
 
-		const slope1 = line1.slope();
-		const slope2 = line2.slope();
-		if(slope1 === slope2) {
+		const slope1 = line1.rationalSlope();
+		const slope2 = line2.rationalSlope();
+		if(slope1.equals(slope2)) {
 			return (line1.yIntercept() === line2.yIntercept()) ? Infinity : null;
 		}
-		const yIntercept1 = line1.yIntercept();
-		const yIntercept2 = line2.yIntercept();
-		const xIntersection = (yIntercept2 - yIntercept1) / (slope1 - slope2);
-		const yIntersection = xIntersection * slope1 + yIntercept1;
-		return new Vector(xIntersection, yIntersection);
+		const yIntercept1 = line1.rationalYIntercept();
+		const yIntercept2 = line2.rationalYIntercept();
+		const xIntersection = (yIntercept2.subtract(yIntercept1)).divide(slope1.subtract(slope2));
+		const yIntersection = xIntersection.multiply(slope1).add(yIntercept1);
+		return new Vector(xIntersection.toNumber(), yIntersection.toNumber());
 	}
 	static segmentIntersection(segment1, segment2, tolerance = 1e-10) {
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
@@ -490,6 +490,14 @@ testing.addUnit("Shape.segmentIntersectsSegment()", {
 		const intersect2 = Shape.segmentIntersectsSegment(segment1, segment2, 2);
 		expect(intersect1).toEqual(false);
 		expect(intersect2).toEqual(true);
+	},
+	"works when one of the slopes is greater than Number.MAX_SAFE_INTEGER": () => {
+		const segment1 = new Segment(-1.4210854715202004e-14, 574, 137, 574);
+		const segment2 = new Segment(21.53042084303869, 556.1322673233594, 21.530420843038666, 709.7978749128185);
+		const intersect1 = Shape.segmentIntersectsSegment(segment1, segment2);
+		const intersect2 = Shape.segmentIntersectsSegment(segment2, segment1);
+		expect(intersect1).toEqual(true);
+		expect(intersect2).toEqual(true);
 	}
 });
 testing.addUnit("Shape.polygonIntersectsSegment()", {
@@ -536,6 +544,22 @@ testing.addUnit("Shape.polygonIntersectsPolygon()", {
 		const polygon2 = new Polygon(-1, -1, 1, -1, 0, 2);
 		const intersect = Shape.polygonIntersectsPolygon(polygon1, polygon2);
 		expect(intersect).toEqual(true);
+	},
+	"returns false when the polygons are very close but not overlapping": () => {
+		const polygon1 = new Polygon(
+			21.53042084303869, 556.1322673233594,
+			104.22350692983966, 499.9019061877512,
+			115.46957915696132, 516.4405234051114,
+			32.776493070160335, 572.6708845407196
+		);
+		const polygon2 = new Polygon(
+			137, 574,
+			137, 656,
+			-1.4210854715202004e-14, 656,
+			-1.4210854715202004e-14, 574
+		);
+		const intersect = Shape.polygonIntersectsPolygon(polygon1, polygon2);
+		expect(intersect).toEqual(false);
 	}
 });
 testing.addUnit("Shape.intersects()", {
