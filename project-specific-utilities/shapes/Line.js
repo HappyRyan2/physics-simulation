@@ -74,11 +74,17 @@ class Line extends Shape {
 			c.strokeLine(x, -LENGTH, x, LENGTH);
 		}
 		const LENGTH = 1e5;
-		const slope = this.slope();
-		c.strokeLine(
-			this.endpoint1.x - LENGTH, this.endpoint1.y - LENGTH * slope,
-			this.endpoint1.x + LENGTH, this.endpoint1.y + LENGTH * slope
-		);
+		const MAX_SLOPE = 1e5;
+		if(this.isVertical()) {
+			c.strokeLine(this.endpoint1.x, -LENGTH, this.endpoint1.x, LENGTH);
+		}
+		else {
+			const slope = Math.max(Math.min(-MAX_SLOPE, this.slope()), MAX_SLOPE);
+			c.strokeLine(
+				this.endpoint1.x - LENGTH, this.endpoint1.y - LENGTH * slope,
+				this.endpoint1.x + LENGTH, this.endpoint1.y + LENGTH * slope
+			);
+		}
 	}
 }
 
