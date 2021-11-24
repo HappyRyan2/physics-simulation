@@ -140,6 +140,17 @@ class PhysicsObject {
 			physicsObject.applyForce(force.multiply(-1), this.intersection(physicsObject));
 		}
 	}
+	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject)) {
+		if(this.shape instanceof Circle) {
+			const angle = normalVector.angle;
+			return new Vector({ angle: normalVector.angle, magnitude: this.shape.radius }).add(this.position);
+		}
+		else if(this.shape instanceof Polygon) {
+			const shape = this.shape.rotate(normalVector.angle);
+			const vertex = shape.vertices.min(v => v.y);
+			return vertex.rotateAbout(0, 0, -normalVector.angle);
+		}
+	}
 
 	velocityOfPoint(point) {
 		const TO_DEGREES = 180 / Math.PI;
@@ -500,6 +511,36 @@ testing.addUnit("PhysicsObject.velocityOfPoint()", {
 		});
 		const velocity = obj.velocityOfPoint(new Vector(8, 10));
 		expect(velocity).toEqual(new Vector(123 - 3, 456 + 3));
+	}
+});
+testing.addUnit("PhysicsObject.collisionForcePoint()", {
+	"correctly calculates the point when the object is a circle": () => {
+		const circle = new PhysicsObject({ shape: new Circle(0, 0, 1) });
+		const polygon = new PhysicsObject({
+			shape: new Polygon(
+				2, -1,
+				-1, 2,
+				0, 3,
+				3, 0
+			)
+		});
+		const point = circle.collisionForcePoint(polygon);
+		expect(point.x).toApproximatelyEqual(Math.SQRT2 / 2);
+		expect(point.y).toApproximatelyEqual(Math.SQRT2 / 2);
+	},
+	"correctly calculates the point when the object is a polygon": () => {
+		const circle = new PhysicsObject({ shape: new Circle(0, 0, 2) });
+		const polygon = new PhysicsObject({
+			shape: new Polygon(
+				1, 1,
+				3, 1,
+				3, 3,
+				1, 3
+			)
+		});
+		const point = polygon.collisionForcePoint(circle);
+		expect(point.x).toApproximatelyEqual(1);
+		expect(point.y).toApproximatelyEqual(1);
 	}
 });
 testing.addUnit("PhysicsObject collisions", {
