@@ -143,7 +143,7 @@ class Shape {
 	}
 
 	static circleLineIntersections(circle, line) {
-		if(line.endpoint1.x === line.endpoint2.x) {
+		if(Math.abs(line.slope()) > 1e10) {
 			const lineX = line.endpoint1.x;
 			if(circle.position.x - circle.radius <= lineX && lineX <= circle.position.x + circle.radius) {
 				const yDist = Math.sqrt(circle.radius ** 2 - (circle.position.x - lineX) ** 2);
@@ -644,6 +644,15 @@ testing.addUnit("Circle.circleLineIntersections()", {
 		const line = new Line(100, 1, 100, 2);
 		const intersections = Shape.circleLineIntersections(circle, line);
 		expect(intersections).toEqual([  ]);
+	},
+	"works when the line's slope is greater than Number.MAX_SAFE_INTEGER": () => {
+		const circle = new Circle(0, 0, 2);
+		const line = new Line(1, 3, 1.0000000000000002, 1);
+		const [intersection1, intersection2] = Shape.circleLineIntersections(circle, line);
+		expect(intersection1.x).toApproximatelyEqual(1);
+		expect(intersection1.y).toApproximatelyEqual(Math.sqrt(3));
+		expect(intersection2.x).toApproximatelyEqual(1);
+		expect(intersection2.y).toApproximatelyEqual(-Math.sqrt(3));
 	}
 });
 testing.addUnit("Shape.circleSegmentIntersections()", {
