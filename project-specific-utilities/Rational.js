@@ -138,4 +138,3 @@ testing.addUnit("Rational.subtract()", {
 		expect(difference).toEqual(new Rational(1, 6));
 	}
 });
-testing.run("Rational.simplify()");

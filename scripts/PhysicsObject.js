@@ -124,9 +124,10 @@ class PhysicsObject {
 	}
 
 	velocityOfPoint(point) {
+		const TO_DEGREES = 180 / Math.PI;
 		const originalPoint = new Vector(point);
 		point = point.subtract(this.position);
-		point.angle -= this.rotation;
+		point.angle -= this.angularVelocity * TO_DEGREES;
 		point = point.add(this.position);
 		return point.subtract(originalPoint).add(this.velocity);
 	}
@@ -460,6 +461,27 @@ testing.addUnit("PhysicsObject.normalVector()", {
 		});
 		const normalVector = polygon1.normalVector(polygon2, new Vector(4, 0));
 		expect(normalVector.angle).toEqual(180); // 0 / 180 / -180
+	}
+});
+testing.addUnit("PhysicsObject.velocityOfPoint()", {
+	"returns the object's translational velocity when the angular velocity is zero": () => {
+		const obj = new PhysicsObject({
+			shape: new Circle(0, 0, 3),
+			position: new Vector(5, 10),
+			velocity: new Vector(123, 456)
+		});
+		const velocity = obj.velocityOfPoint(new Vector(4, 11));
+		expect(velocity).toEqual(new Vector(123, 456));
+	},
+	"works when the angular velocity is nonzero": () => {
+		const obj = new PhysicsObject({
+			shape: new Circle(0, 0, 3),
+			position: new Vector(5, 10),
+			velocity: new Vector(123, 456),
+			angularVelocity: Math.PI / 2 // 90 degrees per frame, clockwise
+		});
+		const velocity = obj.velocityOfPoint(new Vector(8, 10));
+		expect(velocity).toEqual(new Vector(123 - 3, 456 + 3));
 	}
 });
 testing.addUnit("PhysicsObject collisions", {
