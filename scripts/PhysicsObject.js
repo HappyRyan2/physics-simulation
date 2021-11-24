@@ -136,8 +136,10 @@ class PhysicsObject {
 	checkForCollisions(physicsObject, intersects = this.intersects(physicsObject)) {
 		if(this.shouldCollide(physicsObject, intersects)) {
 			const force = this.collisionForce(physicsObject);
-			this.applyForce(force, this.intersection(physicsObject));
-			physicsObject.applyForce(force.multiply(-1), this.intersection(physicsObject));
+			const point1 = this.collisionForcePoint(physicsObject);
+			const point2 = physicsObject.collisionForcePoint(this);
+			this.applyForce(force, point1);
+			physicsObject.applyForce(force.multiply(-1), point2);
 		}
 	}
 	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject)) {
@@ -146,9 +148,10 @@ class PhysicsObject {
 			return new Vector({ angle: normalVector.angle, magnitude: this.shape.radius }).add(this.position);
 		}
 		else if(this.shape instanceof Polygon) {
-			const shape = this.shape.rotate(normalVector.angle);
-			const vertex = shape.vertices.min(v => v.y);
-			return vertex.rotateAbout(0, 0, -normalVector.angle);
+			const shape = this.transformedShape().rotate(-normalVector.angle);
+			const vertex1 = shape.vertices.min(v => v.x).rotateAbout(0, 0, normalVector.angle);
+			const vertex2 = shape.vertices.max(v => v.x).rotateAbout(0, 0, normalVector.angle);
+			return [vertex1, vertex2].min(v => v.distanceFrom(physicsObject.position));
 		}
 	}
 
@@ -161,7 +164,7 @@ class PhysicsObject {
 		return point.subtract(originalPoint).add(this.velocity);
 	}
 
-
+	static MIN_COLLISION_VELOCITY = 0.2;
 	collisionForce(physicsObject) {
 		if(this.immovable) {
 			return physicsObject.collisionForce(this).multiply(-1);
@@ -172,20 +175,37 @@ class PhysicsObject {
 		const normalVector = this.normalVector(physicsObject, intersection);
 
 		const LARGE_NUMBER = 1e6;
-		const resultVelocity = PhysicsObject.velocityAfterCollision(
+		let resultVelocity = PhysicsObject.velocityAfterCollision(
 			this.velocity.scalarProjection(normalVector),
 			physicsObject.velocity.scalarProjection(normalVector),
 			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
 			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			restitutionCoef
 		);
+		let resultVelocity2 = PhysicsObject.velocityAfterCollision(
+			physicsObject.velocity.scalarProjection(normalVector),
+			this.velocity.scalarProjection(normalVector),
+			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
+			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
+			restitutionCoef
+		);
+		const velocityDifference = resultVelocity - resultVelocity2;
+		if(Math.abs(velocityDifference) < PhysicsObject.MIN_COLLISION_VELOCITY) {
+			if(resultVelocity < 0) {
+				resultVelocity = Math.min(resultVelocity, -PhysicsObject.MIN_COLLISION_VELOCITY);
+			}
+			else {
+				resultVelocity = Math.max(resultVelocity, PhysicsObject.MIN_COLLISION_VELOCITY);
+			}
+		}
+		const forcePoint = this.collisionForcePoint(physicsObject, normalVector);
 		const magnitude = utils.continuousBinarySearch((magnitude) => {
 			/* `magnitude` is assumed to be in the same direction as `normalVector`. */
 			const object = this.clone();
 			const force = new Vector({ angle: normalVector.angle, magnitude: magnitude });
-			object.applyForce(force, intersection);
+			object.applyForce(force, forcePoint);
 			object.updateVelocity();
-			return object.velocityOfPoint(intersection).scalarProjection(normalVector) - resultVelocity;
+			return object.velocityOfPoint(forcePoint).scalarProjection(normalVector) - resultVelocity;
 		}, -Infinity, Infinity, 60);
 		return new Vector({ angle: normalVector.angle, magnitude });
 	}
@@ -405,8 +425,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
-		expect(collisionForce.x).toApproximatelyEqual(-1);
-		expect(collisionForce.y).toApproximatelyEqual(-1);
+		expect(collisionForce.x).toApproximatelyEqual(-1 - (PhysicsObject.MIN_COLLISION_VELOCITY / Math.SQRT2));
+		expect(collisionForce.y).toApproximatelyEqual(-1 - (PhysicsObject.MIN_COLLISION_VELOCITY / Math.SQRT2));
 	},
 	"works for equal-mass objects colliding at an angle": () => {
 		const obj1 = new PhysicsObject({
