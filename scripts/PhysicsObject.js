@@ -40,7 +40,8 @@ class PhysicsObject {
 		c.fillStyle = "black";
 		c.translate(this.position.x, this.position.y);
 		c.rotate(this.rotation);
-		this.shape.display(c);
+		c.lineWidth = 3;
+		this.shape.display(c, true);
 	}
 
 	applyForce(force, position = this.position) {
