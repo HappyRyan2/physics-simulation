@@ -42,13 +42,13 @@ const scenarios = [
 					shape: new Circle(0, 0, 50),
 					position: new Vector(0, 400),
 					velocity: new Vector(3, 0),
-					elasticity: 0
+					elasticity: 0.1
 				}),
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(width, 400),
 					velocity: new Vector(-3, 0),
-					elasticity: 0
+					elasticity: 0.1
 				}),
 			]);
 		}
@@ -157,7 +157,7 @@ const scenarios = [
 					position: new Vector(width / 2, height * 15/16),
 					antigravity: true,
 					immovable: true,
-					elasticity: 0
+					elasticity: 0.1
 				}),
 				new PhysicsObject({
 					shape: new Polygon(
@@ -167,7 +167,7 @@ const scenarios = [
 						-50, 10
 					).rotate(45),
 					position: new Vector(width / 2, height / 2),
-					elasticity: 0
+					elasticity: 0.1
 				})
 			], 0.1);
 		}
