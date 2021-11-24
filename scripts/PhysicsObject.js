@@ -37,7 +37,7 @@ class PhysicsObject {
 		this.updatePosition();
 	}
 	display(c) {
-		c.fillStyle = "black";
+		c.strokeStyle = "black";
 		c.translate(this.position.x, this.position.y);
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
