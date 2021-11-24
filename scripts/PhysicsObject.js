@@ -68,8 +68,22 @@ class PhysicsObject {
 		return shape1.intersects(shape2);
 	}
 	movingToward(physicsObject) {
-		const distance = this.position.subtract(physicsObject.position).magnitude;
-		const nextDistance = this.position.add(this.velocity).subtract(physicsObject.position.add(physicsObject.velocity)).magnitude;
+		if(this.shape instanceof Polygon) {
+			for(const vertex of this.shape.vertices) {
+				const distance = vertex.rotateAbout(0, 0, this.rotation).add(this.position).distanceFrom(physicsObject.position);
+				const nextDistance = vertex.rotateAbout(0, 0, this.rotation + this.angularVelocity).add(this.position).add(this.velocity).distanceFrom(physicsObject.position.add(physicsObject.velocity));
+				if(nextDistance <= distance) { return true; }
+			}
+		}
+		if(physicsObject.shape instanceof Polygon) {
+			for(const vertex of physicsObject.shape.vertices) {
+				const distance = vertex.rotateAbout(0, 0, physicsObject.rotation).add(physicsObject.position).distanceFrom(this.position);
+				const nextDistance = vertex.rotateAbout(0, 0, physicsObject.rotation + physicsObject.angularVelocity).add(physicsObject.position).add(physicsObject.velocity).distanceFrom(this.position.add(this.velocity));
+				if(nextDistance <= distance) { return true; }
+			}
+		}
+		const distance = this.position.distanceFrom(physicsObject.position);
+		const nextDistance = this.position.add(this.velocity).distanceFrom(physicsObject.position.add(physicsObject.velocity));
 		return nextDistance <= distance;
 	}
 	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
