@@ -229,6 +229,10 @@ class PhysicsObject {
 		c.lineWidth = 3;
 		normalLine.display();
 	}
+
+	boundingBox() {
+		return this.transformedShape().boundingBox();
+	}
 }
 
 testing.addUnit("PhysicsObject.intersects()", {

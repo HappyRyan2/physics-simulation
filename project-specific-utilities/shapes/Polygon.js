@@ -78,6 +78,14 @@ class Polygon extends Shape {
 		}
 		return new Polygon(points);
 	}
+
+	boundingBox() {
+		const left = this.vertices.min(v => v.x).x;
+		const right = this.vertices.max(v => v.x).x;
+		const top = this.vertices.min(v => v.y).y;
+		const bottom = this.vertices.max(v => v.y).y;
+		return new Rectangle(left, top, right - left, bottom - top);
+	}
 }
 
 testing.addUnit("Polygon constructor", {
@@ -227,5 +235,20 @@ testing.addUnit("Polygon.regularPolygon()", {
 		expect(polygon.vertices[1].y).toApproximatelyEqual(Math.sqrt(3) / 2);
 		expect(polygon.vertices[2].x).toApproximatelyEqual(-1/2);
 		expect(polygon.vertices[2].y).toApproximatelyEqual(-Math.sqrt(3) / 2);
+	}
+});
+testing.addUnit("Polygon.boundingBox()", {
+	"correctly calculates the bounding box": () => {
+		const polygon = new Polygon(
+			1, 2,
+			3, 1,
+			4, 2,
+			3, 3
+		);
+		const boundingBox = polygon.boundingBox();
+		expect(boundingBox.x).toEqual(1);
+		expect(boundingBox.y).toEqual(1);
+		expect(boundingBox.width).toEqual(3);
+		expect(boundingBox.height).toEqual(2);
 	}
 });

@@ -31,6 +31,10 @@ class Circle extends Shape {
 		if(outlineOnly) { c.stroke(); }
 		else { c.fill(); }
 	}
+
+	boundingBox() {
+		return new Rectangle(this.position.x - this.radius, this.position.y - this.radius, this.radius * 2, this.radius * 2);
+	}
 }
 
 testing.addUnit("Circle constructor", {
@@ -67,5 +71,15 @@ testing.addUnit("Circle.rotate()", {
 		const circle = new Circle(1, 2, 5);
 		const rotated = circle.rotate(90);
 		expect(circle).toEqual(new Circle(1, 2, 5));
+	}
+});
+testing.addUnit("Circle.boundingBox()", {
+	"correctly calculates the bounding box": () => {
+		const circle = new Circle(100, 200, 5);
+		const boundingBox = circle.boundingBox();
+		expect(boundingBox.x).toEqual(95);
+		expect(boundingBox.y).toEqual(195);
+		expect(boundingBox.width).toEqual(10);
+		expect(boundingBox.height).toEqual(10);
 	}
 });
