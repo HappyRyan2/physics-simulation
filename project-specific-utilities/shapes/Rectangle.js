@@ -29,6 +29,15 @@ class Rectangle {
 	set bottom(newValue) {
 		this.height = newValue - this.y;
 	}
+
+	static boundingBox(shapes) {
+		const boundingBoxes = shapes.map(s => s instanceof Rectangle ? s : s.boundingBox());
+		const left = boundingBoxes.min(b => b.left).left;
+		const right = boundingBoxes.max(b => b.right).right;
+		const top = boundingBoxes.min(b => b.top).top;
+		const bottom = boundingBoxes.max(b => b.bottom).bottom;
+		return new Rectangle(left, top, right - left, bottom - top);
+	}
 }
 
 
