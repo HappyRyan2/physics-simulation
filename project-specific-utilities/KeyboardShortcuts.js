@@ -34,5 +34,17 @@ class KeyboardShortcuts {
 const keyboardShortcuts = new KeyboardShortcuts([
 	new KeyboardShortcut(() => {
 		app.physicsWorld.paused = !app.physicsWorld.paused;
-	}, "Space")
+	}, "Space"),
+	new KeyboardShortcut(() => {
+		if(app.physicsWorld.paused) {
+			app.physicsWorld.update();
+		}
+	}, "ArrowRight"),
+	new KeyboardShortcut(() => {
+		if(app.physicsWorld.paused) {
+			for(let i = 0; i < 5; i ++) {
+				app.physicsWorld.update();
+			}
+		}
+	}, "ArrowRight", { ctrl: true })
 ]);
