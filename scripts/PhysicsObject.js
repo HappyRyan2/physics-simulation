@@ -118,8 +118,7 @@ class PhysicsObject {
 		}
 		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
-			const point = intersection.subtract(circle.position).normalize().multiply(circle.radius);
-			return point.rotateAbout(0, 0, 90);
+			return intersection.subtract(circle.position).normalize().multiply(circle.radius);
 		}
 		else {
 			const polygon = (
@@ -469,7 +468,7 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			shape: new Polygon(4, 0, 6, 1, 6, -1)
 		});
 		const normalVector = circle.normalVector(polygon);
-		expect(normalVector.angle).toEqual(90); // 90 / -90
+		expect(normalVector.angle).toEqual(0); // 0 / -180
 	},
 	"returns the correct result for two polygons": () => {
 		const polygon1 = new PhysicsObject({
