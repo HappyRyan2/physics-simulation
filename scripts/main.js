@@ -18,8 +18,10 @@ class App {
 		this.displayFrameCount(this.canvasIO.ctx);
 	}
 	update() {
-		this.physicsWorld.update();
-		this.frameCount ++;
+		if(!this.physicsWorld.paused) {
+			this.physicsWorld.update();
+			this.frameCount ++;
+		}
 	}
 
 	displayFrameCount(c) {

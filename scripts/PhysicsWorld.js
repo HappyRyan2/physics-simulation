@@ -4,6 +4,7 @@ class PhysicsWorld {
 	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
 		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
+		this.paused = false;
 	}
 
 	applyGravity() {
