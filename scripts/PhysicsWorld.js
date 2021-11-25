@@ -1,10 +1,11 @@
 class PhysicsWorld {
 	static BREAK_ON_COLLISION = false;
 
-	constructor(objects, gravitationalAcceleration) {
+	constructor(objects, gravitationalAcceleration, boundingBox) {
 		this.objects = objects ?? [];
 		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
 		this.paused = false;
+		this.boundingBox = boundingBox ?? (this.objects.length === 0 ? null : Rectangle.boundingBox(this.objects));
 	}
 
 	applyGravity() {
@@ -54,12 +55,25 @@ class PhysicsWorld {
 	}
 
 	display(c) {
+		c.save();
 		c.fillStyle = "white";
 		c.fillRect(0, 0, c.canvas.width, c.canvas.height);
+		this.displayTransform(c);
 		for(const obj of this.objects) {
 			c.save();
 			obj.display(c);
 			c.restore();
 		}
+		c.restore();
+	}
+	displayTransform(c) {
+		const DISPLAY_MARGIN = 50;
+		const width = c.canvas.width - (2 * DISPLAY_MARGIN);
+		const height = c.canvas.height - (2 * DISPLAY_MARGIN);
+		// const boundingBox = Rectangle.boundingBox(this.objects);
+		const scaleFactor = Math.min(width / this.boundingBox.width, height / this.boundingBox.height);
+		c.translate(c.canvas.width / 2, c.canvas.height / 2);
+		c.scale(scaleFactor, scaleFactor);
+		c.translate(-(this.boundingBox.left + this.boundingBox.right) / 2, -(this.boundingBox.top + this.boundingBox.bottom) / 2);
 	}
 }
