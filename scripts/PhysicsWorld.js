@@ -83,19 +83,38 @@ class PhysicsWorld {
 		}
 	}
 	displayCollisionInfo(c, collision) {
+		const displayObj1 = collision.obj1.isMouseHovered() || this.objects.every(o => !o.isMouseHovered());
+		const displayObj2 = collision.obj2.isMouseHovered() || this.objects.every(o => !o.isMouseHovered());
 		const DOT_SIZE = 7;
 		const FORCE_SCALE = 40;
 		c.fillStyle = "red";
 		c.strokeStyle = "red";
 		c.lineWidth = 2;
 		const tangentialLine = new Line(collision.intersection, collision.intersection.add(collision.tangentialVector));
-		tangentialLine.display(c);
-		c.fillCircle(collision.intersection.x, collision.intersection.y, DOT_SIZE);
+		if(displayObj1 || displayObj2) {
+			tangentialLine.display(c);
+			c.fillCircle(collision.intersection.x, collision.intersection.y, DOT_SIZE);
+		}
 
 		c.fillStyle = "orange";
 		c.strokeStyle = "orange";
 		c.lineWidth = 3;
-		utils.drawArrow(c, collision.force1.normalize().multiply(FORCE_SCALE), collision.forcePoint1);
-		utils.drawArrow(c, collision.force2.normalize().multiply(FORCE_SCALE), collision.forcePoint2);
+		c.font = "20px monospace";
+		c.textBaseline = "middle";
+		c.textAlign = "center";
+		if(displayObj1) {
+			utils.drawArrow(c, collision.force1.normalize().multiply(FORCE_SCALE), collision.forcePoint1);
+			if(collision.obj1.isMouseHovered()) {
+				const textLocation = collision.forcePoint1.add(new Vector(0, FORCE_SCALE));
+				c.fillText(`|F| = ${collision.force1.magnitude.toPrecision(3)}`, textLocation.x, textLocation.y);
+			}
+		}
+		if(displayObj2) {
+			utils.drawArrow(c, collision.force2.normalize().multiply(FORCE_SCALE), collision.forcePoint2);
+			if(collision.obj2.isMouseHovered()) {
+				const textLocation = collision.forcePoint2.add(new Vector(0, FORCE_SCALE));
+				c.fillText(`|F| = ${collision.force2.magnitude.toPrecision(3)}`, textLocation.x, textLocation.y);
+			}
+		}
 	}
 }

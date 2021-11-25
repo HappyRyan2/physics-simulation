@@ -38,10 +38,11 @@ class PhysicsObject {
 	}
 	display(c) {
 		c.strokeStyle = "black";
+		c.fillStyle = "black";
 		c.translate(this.position.x, this.position.y);
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
-		this.shape.display(c, true);
+		this.shape.display(c, !this.isMouseHovered());
 	}
 
 	applyForce(force, position = this.position) {
@@ -235,6 +236,10 @@ class PhysicsObject {
 
 	boundingBox() {
 		return this.transformedShape().boundingBox();
+	}
+
+	isMouseHovered(io = app.canvasIO) {
+		return this.transformedShape().containsPoint(io.mouse);
 	}
 }
 
