@@ -147,14 +147,25 @@ class PhysicsObject {
 	}
 	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject)) {
 		if(this.shape instanceof Circle) {
-			const angle = normalVector.angle;
-			return new Vector({ angle: normalVector.angle, magnitude: this.shape.radius }).add(this.position);
+			return (
+				this.intersection(physicsObject).subtract(this.position)
+				.normalize()
+				.multiply(this.shape.radius)
+				.add(this.position)
+			);
 		}
 		else if(this.shape instanceof Polygon) {
-			const shape = this.transformedShape().rotate(-normalVector.angle);
-			const vertex1 = shape.vertices.min(v => v.x).rotateAbout(0, 0, normalVector.angle);
-			const vertex2 = shape.vertices.max(v => v.x).rotateAbout(0, 0, normalVector.angle);
-			return [vertex1, vertex2].min(v => v.distanceFrom(physicsObject.position));
+			const shape = this.transformedShape();
+			const rotated = this.transformedShape().rotate(-normalVector.angle);
+			const vertices = rotated.vertices.filter((v, i) => physicsObject.transformedShape().containsPoint(shape.vertices[i]));
+			if(vertices.length === 0) {
+				return this.intersection(physicsObject);
+			}
+			else {
+				const vertex1 = vertices.min(v => v.x).rotateAbout(0, 0, normalVector.angle);
+				const vertex2 = vertices.max(v => v.x).rotateAbout(0, 0, normalVector.angle);
+				return [vertex1, vertex2].min(v => v.distanceFrom(physicsObject.position));
+			}
 		}
 	}
 

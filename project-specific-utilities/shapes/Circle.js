@@ -35,6 +35,10 @@ class Circle extends Shape {
 	boundingBox() {
 		return new Rectangle(this.position.x - this.radius, this.position.y - this.radius, this.radius * 2, this.radius * 2);
 	}
+
+	containsPoint(point) {
+		return this.position.distanceFrom(point) <= this.radius;
+	}
 }
 
 testing.addUnit("Circle constructor", {
