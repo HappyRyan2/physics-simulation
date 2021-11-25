@@ -69,11 +69,11 @@ class Line extends Shape {
 	}
 
 	display(c = app.canvasIO.ctx) {
+		const LENGTH = 1e5;
 		if(this.endpoint1.x === this.endpoint2.x) {
 			const x = this.endpoint1.x;
 			c.strokeLine(x, -LENGTH, x, LENGTH);
 		}
-		const LENGTH = 1e5;
 		const MAX_SLOPE = 1e5;
 		if(this.isVertical()) {
 			c.strokeLine(this.endpoint1.x, -LENGTH, this.endpoint1.x, LENGTH);
