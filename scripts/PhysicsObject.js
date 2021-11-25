@@ -43,6 +43,17 @@ class PhysicsObject {
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
 		this.shape.display(c, !this.isMouseHovered());
+		const VELOCITY_ARROW_COLOR = "rgb(0, 158, 250)";
+		const ARROW_LENGTH = 40;
+		c.strokeStyle = VELOCITY_ARROW_COLOR;
+		c.fillStyle = VELOCITY_ARROW_COLOR;
+		utils.drawArrow(c, this.velocity.normalize().multiply(ARROW_LENGTH), new Vector(0, 0), "tail");
+		if(this.isMouseHovered()) {
+			const textLocation = new Vector(0, -ARROW_LENGTH);
+			c.textAlign = "center";
+			c.textBaseline = "middle";
+			c.fillText(`|V| = ${this.velocity.magnitude.toPrecision(3)}`, textLocation.x, textLocation.y);
+		}
 	}
 
 	applyForce(force, position = this.position) {
