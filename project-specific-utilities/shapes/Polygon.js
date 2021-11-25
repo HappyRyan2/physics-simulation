@@ -27,6 +27,7 @@ class Polygon extends Shape {
 	}
 
 	containsPoint(vector) {
+		if(!this.boundingBox().containsPoint(vector)) { return false; }
 		/* find a ray through the point that doesn't contain any of the vertices */
 		const vertices = [...this.vertices].sort((v1, v2) => v2.subtract(vector).angle - v1.subtract(vector).angle);
 		let line;

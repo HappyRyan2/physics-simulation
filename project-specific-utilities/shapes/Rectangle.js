@@ -45,6 +45,9 @@ class Rectangle {
 			this.y + this.height >= rectangle.y - tolerance && this.y <= rectangle.y + rectangle.height + tolerance
 		);
 	}
+	containsPoint(point) {
+		return point.x >= this.x && point.x <= this.x + this.width && point.y >= this.y && point.y <= this.y + this.height;
+	}
 }
 
 

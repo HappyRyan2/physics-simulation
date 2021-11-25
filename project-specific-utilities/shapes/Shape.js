@@ -49,6 +49,7 @@ class Shape {
 		return polygon.edges().some(e => Shape.segmentIntersectsSegment(e, segment));
 	}
 	static polygonIntersectsPolygon(polygon1, polygon2) {
+		if(!polygon1.boundingBox().intersects(polygon2.boundingBox())) { return false; }
 		if(polygon1.containsPoint(polygon2.vertices[0]) || polygon2.containsPoint(polygon1.vertices[0])) {
 			return true;
 		}
