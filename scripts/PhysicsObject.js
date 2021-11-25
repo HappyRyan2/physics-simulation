@@ -110,6 +110,9 @@ class PhysicsObject {
 			return intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 	}
+	tangentialVector(physicsObject, intersection = this.intersection(physicsObject)) {
+		return this.normalVector(physicsObject, intersection).rotateAbout(0, 0, 90);
+	}
 	normalVector(physicsObject, intersection = this.intersection(physicsObject)) {
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
@@ -217,17 +220,6 @@ class PhysicsObject {
 		const changeInVelocity = velocity1 - resultVelocity;
 		const forceMagnitude = changeInVelocity * mass1;
 		return new Vector({ angle: 180, magnitude: forceMagnitude });
-	}
-
-	displayCollisionInfo(physicsObject, c = app.canvasIO.ctx) {
-		const intersection = this.intersection(physicsObject);
-		const normalVector = this.normalVector(physicsObject);
-		c.fillStyle = "red";
-		c.strokeStyle = "red";
-		c.fillCircle(intersection.x, intersection.y, 5);
-		const normalLine = new Line(intersection, intersection.add(normalVector));
-		c.lineWidth = 3;
-		normalLine.display();
 	}
 
 	boundingBox() {

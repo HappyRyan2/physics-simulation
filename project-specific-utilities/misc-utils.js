@@ -48,3 +48,21 @@ testing.addUnit("utils.continuousBinarySearch()", {
 		expect(result).toApproximatelyEqual(Math.SQRT2, 1e-5);
 	},
 });
+
+
+utils.drawArrow = (c, arrow, position, positionType = "head") => {
+	const TO_RADIANS = Math.PI / 180;
+	const pointLength = Math.max(10, arrow.magnitude * 1/5);
+	if(positionType === "head") {
+		c.save();
+		c.translate(position.x, position.y);
+		c.rotate(TO_RADIANS * (-arrow.angle + 90));
+		c.strokeLine(0, 0, pointLength, pointLength);
+		c.strokeLine(0, 0, -pointLength, pointLength);
+		c.strokeLine(0, 0, 0, arrow.magnitude);
+		c.restore();
+	}
+	else if(positionType === "tail") {
+		utils.drawArrow(c, arrow, position.add(arrow), "head");
+	}
+};

@@ -79,7 +79,7 @@ class Line extends Shape {
 			c.strokeLine(this.endpoint1.x, -LENGTH, this.endpoint1.x, LENGTH);
 		}
 		else {
-			const slope = Math.max(Math.min(-MAX_SLOPE, this.slope()), MAX_SLOPE);
+			const slope = Math.max(Math.min(MAX_SLOPE, this.slope()), -MAX_SLOPE);
 			c.strokeLine(
 				this.endpoint1.x - LENGTH, this.endpoint1.y - LENGTH * slope,
 				this.endpoint1.x + LENGTH, this.endpoint1.y + LENGTH * slope
