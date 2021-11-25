@@ -3,11 +3,10 @@ class PhysicsWorld {
 	static PAUSE_ON_COLLISION = true;
 	static DISPLAY_COLLISION_INFO = true;
 
-	constructor(objects, gravitationalAcceleration, boundingBox) {
+	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
 		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
 		this.paused = false;
-		this.boundingBox = boundingBox ?? (this.objects.length === 0 ? null : Rectangle.boundingBox(this.objects));
 
 		this.collisionInfo = []; // used for debugging
 	}
@@ -74,10 +73,8 @@ class PhysicsWorld {
 	}
 
 	display(c) {
-		c.save();
 		c.fillStyle = "white";
 		c.fillRect(0, 0, c.canvas.width, c.canvas.height);
-		this.displayTransform(c);
 		for(const obj of this.objects) {
 			c.save();
 			obj.display(c);
@@ -88,7 +85,6 @@ class PhysicsWorld {
 				this.displayCollisionInfo(c, collision);
 			}
 		}
-		c.restore();
 	}
 	displayCollisionInfo(c, collision) {
 		const DOT_SIZE = 7;
@@ -105,15 +101,5 @@ class PhysicsWorld {
 		c.lineWidth = 3;
 		utils.drawArrow(c, collision.force1.normalize().multiply(FORCE_SCALE), collision.forcePoint1);
 		utils.drawArrow(c, collision.force2.normalize().multiply(FORCE_SCALE), collision.forcePoint2);
-	}
-	displayTransform(c) {
-		const DISPLAY_MARGIN = 50;
-		const width = c.canvas.width - (2 * DISPLAY_MARGIN);
-		const height = c.canvas.height - (2 * DISPLAY_MARGIN);
-		// const boundingBox = Rectangle.boundingBox(this.objects);
-		const scaleFactor = Math.min(width / this.boundingBox.width, height / this.boundingBox.height);
-		c.translate(c.canvas.width / 2, c.canvas.height / 2);
-		c.scale(scaleFactor, scaleFactor);
-		c.translate(-(this.boundingBox.left + this.boundingBox.right) / 2, -(this.boundingBox.top + this.boundingBox.bottom) / 2);
 	}
 }
