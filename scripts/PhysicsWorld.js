@@ -32,17 +32,19 @@ class PhysicsWorld {
 						this.paused = true;
 					}
 					newIntersections.push([obj1, obj2]);
-					this.collisionInfo.push({
-						obj1: obj1,
-						obj2: obj2,
-						intersection: obj1.intersection(obj2),
-						normalVector: obj1.normalVector(obj2),
-						tangentialVector: obj1.tangentialVector(obj2),
-						forcePoint1: obj1.collisionForcePoint(obj2),
-						forcePoint2: obj2.collisionForcePoint(obj1),
-						force1: obj1.collisionForce(obj2),
-						force2: obj2.collisionForce(obj1)
-					});
+					if(DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
+						this.collisionInfo.push({
+							obj1: obj1,
+							obj2: obj2,
+							intersection: obj1.intersection(obj2),
+							normalVector: obj1.normalVector(obj2),
+							tangentialVector: obj1.tangentialVector(obj2),
+							forcePoint1: obj1.collisionForcePoint(obj2),
+							forcePoint2: obj2.collisionForcePoint(obj1),
+							force1: obj1.collisionForce(obj2),
+							force2: obj2.collisionForce(obj1)
+						});
+					}
 				}
 				obj1.checkForCollisions(obj2, intersects);
 			}
