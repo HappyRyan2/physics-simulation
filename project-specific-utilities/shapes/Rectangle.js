@@ -38,6 +38,13 @@ class Rectangle {
 		const bottom = boundingBoxes.max(b => b.bottom).bottom;
 		return new Rectangle(left, top, right - left, bottom - top);
 	}
+
+	intersects(rectangle, tolerance = 1e-10) {
+		return (
+			this.x + this.width >= rectangle.x - tolerance && this.x <= rectangle.x + rectangle.width + tolerance &&
+			this.y + this.height >= rectangle.y - tolerance && this.y <= rectangle.y + rectangle.height + tolerance
+		);
+	}
 }
 
 

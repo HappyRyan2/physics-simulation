@@ -86,6 +86,14 @@ class Segment extends Shape {
 		c.fillCircle(this.endpoint2.x, this.endpoint2.y, ENDPOINT_RADIUS);
 		c.strokeLine(this.endpoint1, this.endpoint2);
 	}
+
+	boundingBox() {
+		const left = Math.min(this.endpoint1.x, this.endpoint2.x);
+		const right = Math.max(this.endpoint1.x, this.endpoint2.x);
+		const top = Math.min(this.endpoint1.y, this.endpoint2.y);
+		const bottom = Math.max(this.endpoint1.y, this.endpoint2.y);
+		return new Rectangle(left, top, right - left, bottom - top);
+	}
 }
 
 testing.addUnit("Segment constructor", {

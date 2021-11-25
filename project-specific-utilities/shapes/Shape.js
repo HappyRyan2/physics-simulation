@@ -60,6 +60,7 @@ class Shape {
 		return false;
 	}
 	static segmentIntersectsSegment(segment1, segment2, tolerance = 1e-10) {
+		if(!segment1.boundingBox().intersects(segment2.boundingBox(), tolerance)) { return false; }
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return false; }
 		else if(intersection === Infinity) {
@@ -124,6 +125,7 @@ class Shape {
 		return new Vector(xIntersection.toNumber(), yIntersection.toNumber());
 	}
 	static segmentIntersection(segment1, segment2, tolerance = 1e-10) {
+		if(!segment1.boundingBox().intersects(segment2.boundingBox(), tolerance)) { return null; }
 		const intersection = Shape.lineIntersection(new Line(segment1), new Line(segment2));
 		if(intersection === null) { return null; }
 		else if(intersection === Infinity) {
