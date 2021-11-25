@@ -88,7 +88,8 @@ const scenarios = [
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(0, height / 2 - 100),
-					velocity: new Vector(3, 0)
+					velocity: new Vector(3, 0),
+					selected: true
 				})
 			]);
 		}

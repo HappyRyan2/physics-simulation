@@ -83,8 +83,8 @@ class PhysicsWorld {
 		}
 	}
 	displayCollisionInfo(c, collision) {
-		const displayObj1 = collision.obj1.isMouseHovered() || this.objects.every(o => !o.isMouseHovered());
-		const displayObj2 = collision.obj2.isMouseHovered() || this.objects.every(o => !o.isMouseHovered());
+		const displayObj1 = collision.obj1.selected || collision.obj1.isMouseHovered() || this.objects.every(o => !o.isMouseHovered() && !o.selected);
+		const displayObj2 = collision.obj2.selected || collision.obj2.isMouseHovered() || this.objects.every(o => !o.isMouseHovered() && !o.selected);
 		const DOT_SIZE = 7;
 		const FORCE_SCALE = 40;
 		c.fillStyle = "red";
@@ -104,14 +104,14 @@ class PhysicsWorld {
 		c.textAlign = "center";
 		if(displayObj1) {
 			utils.drawArrow(c, collision.force1.normalize().multiply(FORCE_SCALE), collision.forcePoint1);
-			if(collision.obj1.isMouseHovered()) {
+			if(collision.obj1.selected || collision.obj1.isMouseHovered()) {
 				const textLocation = collision.forcePoint1.add(new Vector(0, FORCE_SCALE));
 				c.fillText(`|F| = ${collision.force1.magnitude.toPrecision(3)}`, textLocation.x, textLocation.y);
 			}
 		}
 		if(displayObj2) {
 			utils.drawArrow(c, collision.force2.normalize().multiply(FORCE_SCALE), collision.forcePoint2);
-			if(collision.obj2.isMouseHovered()) {
+			if(collision.obj2.selected || collision.obj2.isMouseHovered()) {
 				const textLocation = collision.forcePoint2.add(new Vector(0, FORCE_SCALE));
 				c.fillText(`|F| = ${collision.force2.magnitude.toPrecision(3)}`, textLocation.x, textLocation.y);
 			}

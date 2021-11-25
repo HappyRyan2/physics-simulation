@@ -13,6 +13,7 @@ class PhysicsObject {
 		this.elasticity = properties.elasticity ?? 0.5;
 		this.antigravity = properties.antigravity ?? false;
 		this.immovable = properties.immovable ?? false;
+		this.selected = properties.selected ?? false;
 
 		this.overlappedObjects = [];
 	}
@@ -42,13 +43,18 @@ class PhysicsObject {
 		c.translate(this.position.x, this.position.y);
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
-		this.shape.display(c, !this.isMouseHovered());
+		this.shape.display(c, !(this.selected || this.isMouseHovered()));
+		this.displayVelocity(c);
+	}
+	displayVelocity(c) {
 		const VELOCITY_ARROW_COLOR = "rgb(0, 158, 250)";
 		const ARROW_LENGTH = 40;
-		c.strokeStyle = VELOCITY_ARROW_COLOR;
-		c.fillStyle = VELOCITY_ARROW_COLOR;
-		utils.drawArrow(c, this.velocity.normalize().multiply(ARROW_LENGTH), new Vector(0, 0), "tail");
-		if(this.isMouseHovered()) {
+		if(this.selected || this.isMouseHovered() || !app.physicsWorld.objects.some(o => o.selected || o.isMouseHovered())) {
+			c.strokeStyle = VELOCITY_ARROW_COLOR;
+			c.fillStyle = VELOCITY_ARROW_COLOR;
+			utils.drawArrow(c, this.velocity.normalize().multiply(ARROW_LENGTH), new Vector(0, 0), "tail");
+		}
+		if(this.selected || this.isMouseHovered()) {
 			const textLocation = new Vector(0, -ARROW_LENGTH);
 			c.textAlign = "center";
 			c.textBaseline = "middle";
