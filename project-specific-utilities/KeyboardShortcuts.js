@@ -38,12 +38,14 @@ const keyboardShortcuts = new KeyboardShortcuts([
 	new KeyboardShortcut(() => {
 		if(app.physicsWorld.paused) {
 			app.physicsWorld.update();
+			app.frameCount ++;
 		}
 	}, "ArrowRight"),
 	new KeyboardShortcut(() => {
 		if(app.physicsWorld.paused) {
 			for(let i = 0; i < 5; i ++) {
 				app.physicsWorld.update();
+				app.frameCount ++;
 			}
 		}
 	}, "ArrowRight", { ctrl: true })
