@@ -157,10 +157,11 @@ class PhysicsObject {
 	checkForCollisions(physicsObject, intersects = this.intersects(physicsObject)) {
 		if(this.shouldCollide(physicsObject, intersects)) {
 			const force = this.collisionForce(physicsObject);
+			const force2 = physicsObject.collisionForce(this);
 			const point1 = this.collisionForcePoint(physicsObject);
 			const point2 = physicsObject.collisionForcePoint(this);
 			this.applyForce(force, point1);
-			physicsObject.applyForce(force.multiply(-1), point2);
+			physicsObject.applyForce(force2, point2);
 		}
 	}
 	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject)) {
