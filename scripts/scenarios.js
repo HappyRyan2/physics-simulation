@@ -173,4 +173,3 @@ const scenarios = [
 		}
 	}
 ];
-scenarios[6].load();

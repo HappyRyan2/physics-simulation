@@ -1,8 +1,4 @@
 class PhysicsWorld {
-	static BREAK_ON_COLLISION = false;
-	static PAUSE_ON_COLLISION = true;
-	static DISPLAY_COLLISION_INFO = true;
-
 	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
 		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
@@ -27,12 +23,12 @@ class PhysicsWorld {
 				const obj2 = this.objects[j];
 				const intersects = obj1.intersects(obj2);
 				if(intersects) {
-					if(PhysicsWorld.BREAK_ON_COLLISION && app.frameCount > 1) {
+					if(DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
 						this.display(app.canvasIO.ctx); // update screen with latest positions
 						obj1.displayCollisionInfo(obj2);
 						debugger;
 					}
-					if(PhysicsWorld.PAUSE_ON_COLLISION && app.frameCount > 1) {
+					if(DEBUG_SETTINGS.PAUSE_ON_COLLISION && app.frameCount > 1) {
 						this.paused = true;
 					}
 					newIntersections.push([obj1, obj2]);
@@ -80,7 +76,7 @@ class PhysicsWorld {
 			obj.display(c);
 			c.restore();
 		}
-		if(PhysicsWorld.DISPLAY_COLLISION_INFO) {
+		if(DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
 			for(const collision of this.collisionInfo) {
 				this.displayCollisionInfo(c, collision);
 			}
