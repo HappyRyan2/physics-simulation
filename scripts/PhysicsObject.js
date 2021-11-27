@@ -232,14 +232,7 @@ class PhysicsObject {
 			}
 		}
 		const forcePoint = this.collisionForcePoint(physicsObject, normalVector);
-		const magnitude = utils.continuousBinarySearch((magnitude) => {
-			/* `magnitude` is assumed to be in the same direction as `normalVector`. */
-			const object = this.clone();
-			const force = new Vector({ angle: normalVector.angle, magnitude: magnitude });
-			object.applyForce(force, forcePoint);
-			object.updateVelocity();
-			return object.velocityOfPoint(forcePoint).scalarProjection(normalVector) - resultVelocity;
-		}, -Infinity, Infinity, 60);
+		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity, forcePoint, this);
 		return new Vector({ angle: normalVector.angle, magnitude });
 	}
 	static velocityAfterCollision(velocity1, velocity2, mass1, mass2, restitutionCoef) {
@@ -250,6 +243,31 @@ class PhysicsObject {
 		const changeInVelocity = velocity1 - resultVelocity;
 		const forceMagnitude = changeInVelocity * mass1;
 		return new Vector({ angle: 180, magnitude: forceMagnitude });
+	}
+
+	static collisionForceFromVelocity(physicsObject, normalVector, point, finalVelocity) {
+		const { x: nX, y: nY } = normalVector;
+		const { x: pX, y: pY } = physicsObject.position;
+		const { x: vX, y: vY } = physicsObject.velocity;
+		const w = physicsObject.angularVelocity;
+		const { x: iX, y: iY } = point;
+		const m = physicsObject.inertialMass;
+		const iR = physicsObject.rotationalInertia;
+		const r = physicsObject.position.distanceFrom(point);
+		const theta = normalVector.angle - (point.subtract(physicsObject.position).angle);
+		const sinTheta = Math.sin(theta * Math.PI / 180);
+		const vF = finalVelocity;
+		const rC = PhysicsObject.ROTATION_CONSTANT;
+
+		const result1 = (vF - nX * vX - nY * vY - w * (nX * pY - nX * iY + nY * iX - nY * pX)) / ((1 / m) + r * sinTheta * rC * (nX * pY - nX * iY + nY * iX - nY * pX) / iR);
+		const result2 = (vF - nX * vX - nY * vY - w * (nX * pY - nX * iY + nY * iX - nY * pX)) / ((1 / m) - r * sinTheta * rC * (nX * pY - nX * iY + nY * iX - nY * pX) / iR);
+		return [result1, result2].min(magnitude => {
+			const obj = physicsObject.clone();
+			const force = new Vector({ angle: normalVector.angle, magnitude: magnitude });
+			obj.applyForce(force, point);
+			obj.updateVelocity();
+			return Math.dist(finalVelocity, obj.velocityOfPoint(point).scalarProjection(normalVector));
+		});
 	}
 
 	boundingBox() {
