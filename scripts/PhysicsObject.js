@@ -135,11 +135,11 @@ class PhysicsObject {
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
-			return shape1.position.subtract(shape2.position);
+			return shape1.position.subtract(shape2.position).normalize();
 		}
 		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
-			return intersection.subtract(circle.position).normalize().multiply(circle.radius);
+			return intersection.subtract(circle.position).normalize();
 		}
 		else {
 			const polygon = (
@@ -150,7 +150,7 @@ class PhysicsObject {
 			const edge = polygon.closestEdge(intersection);
 			const result = edge.endpoint1.subtract(edge.endpoint2);
 			result.angle += 90;
-			return result;
+			return result.normalize();
 		}
 		return [intersection, normalVector];
 	}
