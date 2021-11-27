@@ -167,8 +167,65 @@ const scenarios = [
 						50, -10,
 						50, 10,
 						-50, 10
+					),
+					position: new Vector(width / 2, height / 2),
+					elasticity: 0.1
+				})
+			], 0.1);
+		}
+	},
+	{
+		name: "slanted-falling-rectangle",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Polygon([
+						new Vector(-width / 2, -height * 1/16),
+						new Vector(width / 2, -height * 1/16),
+						new Vector(width / 2, height * 1/16),
+						new Vector(-width / 2, height * 1/16),
+					]),
+					position: new Vector(width / 2, height * 15/16),
+					antigravity: true,
+					immovable: true,
+					elasticity: 0.1
+				}),
+				new PhysicsObject({
+					shape: new Polygon(
+						-50, -10,
+						50, -10,
+						50, 10,
+						-50, 10
 					).rotate(45),
 					position: new Vector(width / 2, height / 2),
+					elasticity: 0.1
+				})
+			], 0.1);
+		}
+	},
+	{
+		name: "rectangle-falls-on-slope",
+		load: () => {
+			const { width, height } = app.canvasIO.canvas;
+			const FLOOR_SIZE = 150;
+			app.physicsWorld = new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Polygon(-50, -10, 50, -10, 50, 10, -50, 10),
+					position: new Vector(width / 2, 0),
+					elasticity: 0.1,
+					selected: true
+				}),
+				new PhysicsObject({
+					shape: new Polygon(
+						FLOOR_SIZE, FLOOR_SIZE,
+						-FLOOR_SIZE, FLOOR_SIZE,
+						-FLOOR_SIZE, 0,
+						FLOOR_SIZE, -FLOOR_SIZE
+					),
+					position: new Vector(width / 2, height / 2),
+					immovable: true,
+					antigravity: true,
 					elasticity: 0.1
 				})
 			], 0.1);
