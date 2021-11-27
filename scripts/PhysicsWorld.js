@@ -77,7 +77,9 @@ class PhysicsWorld {
 			c.save();
 			obj.display(c);
 			c.restore();
-			obj.displayVelocity(c);
+			if(DEBUG_SETTINGS.DISPLAY_VELOCITIES) {
+				obj.displayVelocity(c);
+			}
 		}
 		if(DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
 			for(const collision of this.collisionInfo) {
