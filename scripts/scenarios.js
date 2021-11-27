@@ -2,9 +2,10 @@ const scenarios = [
 	{
 		name: "falling-ball",
 		load: () => {
+			const { width, height } = app.canvasIO.canvas;
 			app.physicsWorld = new PhysicsWorld([
 				new PhysicsObject({
-					shape: new Circle(0, 0, 1),
+					shape: new Circle(width / 2, height / 2, 50),
 				})
 			], 0.1);
 		}
