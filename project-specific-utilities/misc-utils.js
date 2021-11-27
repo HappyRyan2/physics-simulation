@@ -66,3 +66,8 @@ utils.drawArrow = (c, arrow, position, positionType = "head") => {
 		utils.drawArrow(c, arrow, position.add(arrow), "head");
 	}
 };
+
+
+utils.weightedVectorAverage = (vectors, weights) => {
+	return vectors.map((v, i) => v.multiply(weights[i])).reduce((a, b) => a.add(b)).divide(weights.sum());
+};

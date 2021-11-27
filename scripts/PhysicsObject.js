@@ -164,7 +164,7 @@ class PhysicsObject {
 			physicsObject.applyForce(force2, point2);
 		}
 	}
-	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject)) {
+	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject), intersection = this.intersection(physicsObject)) {
 		if(this.shape instanceof Circle) {
 			return (
 				this.intersection(physicsObject).subtract(this.position)
@@ -174,16 +174,19 @@ class PhysicsObject {
 			);
 		}
 		else if(this.shape instanceof Polygon) {
+			const tangentialVector = normalVector.rotateAbout(0, 0, 90);
+			const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
 			const shape = this.transformedShape();
-			const rotated = this.transformedShape().rotate(-normalVector.angle);
-			const vertices = rotated.vertices.filter((v, i) => physicsObject.transformedShape().containsPoint(shape.vertices[i]));
+			const vertices = shape.vertices.filter((v, i) =>
+				physicsObject.transformedShape().containsPoint(shape.vertices[i]) &&
+				!(new Segment(shape.vertices[i], physicsObject.position).intersects(tangentialLine))
+			);
 			if(vertices.length === 0) {
 				return this.intersection(physicsObject);
 			}
 			else {
-				const vertex1 = vertices.min(v => v.x).rotateAbout(0, 0, normalVector.angle);
-				const vertex2 = vertices.max(v => v.x).rotateAbout(0, 0, normalVector.angle);
-				return [vertex1, vertex2].min(v => v.distanceFrom(physicsObject.position));
+				const weights = vertices.map(v => tangentialLine.distanceFrom(v));
+				return utils.weightedVectorAverage(vertices, weights);
 			}
 		}
 	}
@@ -231,7 +234,7 @@ class PhysicsObject {
 				resultVelocity = Math.max(resultVelocity, PhysicsObject.MIN_COLLISION_VELOCITY);
 			}
 		}
-		const forcePoint = this.collisionForcePoint(physicsObject, normalVector);
+		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity, forcePoint, this);
 		return new Vector({ angle: normalVector.angle, magnitude });
 	}
