@@ -22,7 +22,7 @@ class PhysicsWorld {
 			for(let j = i + 1; j < this.objects.length; j ++) {
 				const obj2 = this.objects[j];
 				const intersects = obj1.intersects(obj2);
-				if(intersects) {
+				if(intersects && obj1.shouldCollide(obj2)) {
 					if(DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
 						this.display(app.canvasIO.ctx); // update screen with latest positions
 						obj1.displayCollisionInfo(obj2);

@@ -67,6 +67,16 @@ class Line extends Shape {
 		);
 		return intersection.subtract(point).magnitude;
 	}
+	signedDistance(point, negativePoint) {
+		/* Returns the distance between the line and the point, but with a positive / negative sign depending on which side of the line it is on. */
+		const distance = this.distanceFrom(point);
+		if(new Segment(point, negativePoint).intersects(this)) {
+			return -distance;
+		}
+		else {
+			return distance;
+		}
+	}
 
 	display(c = app.canvasIO.ctx) {
 		const LENGTH = 1e5;

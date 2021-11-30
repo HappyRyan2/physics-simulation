@@ -85,24 +85,13 @@ class PhysicsObject {
 		const shape2 = physicsObject.transformedShape();
 		return shape1.intersects(shape2);
 	}
-	movingToward(physicsObject) {
-		if(this.shape instanceof Polygon) {
-			for(const vertex of this.shape.vertices) {
-				const distance = vertex.rotateAbout(0, 0, this.rotation).add(this.position).distanceFrom(physicsObject.position);
-				const nextDistance = vertex.rotateAbout(0, 0, this.rotation + this.angularVelocity).add(this.position).add(this.velocity).distanceFrom(physicsObject.position.add(physicsObject.velocity));
-				if(nextDistance <= distance) { return true; }
-			}
-		}
-		if(physicsObject.shape instanceof Polygon) {
-			for(const vertex of physicsObject.shape.vertices) {
-				const distance = vertex.rotateAbout(0, 0, physicsObject.rotation).add(physicsObject.position).distanceFrom(this.position);
-				const nextDistance = vertex.rotateAbout(0, 0, physicsObject.rotation + physicsObject.angularVelocity).add(physicsObject.position).add(physicsObject.velocity).distanceFrom(this.position.add(this.velocity));
-				if(nextDistance <= distance) { return true; }
-			}
-		}
-		const distance = this.position.distanceFrom(physicsObject.position);
-		const nextDistance = this.position.add(this.velocity).distanceFrom(physicsObject.position.add(physicsObject.velocity));
-		return nextDistance <= distance;
+	movingToward(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject)) {
+		const TO_RADIANS = Math.PI / 180;
+		const normalLine = new Line(intersection, intersection.add(normalVector));
+		const distance1 = normalLine.signedDistance(intersection, physicsObject.position);
+		const nextPosition = intersection.rotateAbout(this.position.x, this.position.y, this.angularVelocity * TO_RADIANS).add(this.velocity);
+		const distance2 = normalLine.signedDistance(nextPosition, physicsObject.position);
+		return distance2 <= distance1;
 	}
 	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
 		if(!intersects) { return false; }
@@ -212,15 +201,15 @@ class PhysicsObject {
 
 		const LARGE_NUMBER = 1e6;
 		let resultVelocity = PhysicsObject.velocityAfterCollision(
-			this.velocity.scalarProjection(normalVector),
-			physicsObject.velocity.scalarProjection(normalVector),
+			this.velocityOfPoint(intersection).scalarProjection(normalVector),
+			physicsObject.velocityOfPoint(intersection).scalarProjection(normalVector),
 			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
 			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			restitutionCoef
 		);
 		let resultVelocity2 = PhysicsObject.velocityAfterCollision(
-			physicsObject.velocity.scalarProjection(normalVector),
-			this.velocity.scalarProjection(normalVector),
+			physicsObject.velocityOfPoint(intersection).scalarProjection(normalVector),
+			this.velocityOfPoint(intersection).scalarProjection(normalVector),
 			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
 			restitutionCoef
@@ -235,8 +224,8 @@ class PhysicsObject {
 			}
 		}
 		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
-		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity, forcePoint, this);
-		return new Vector({ angle: normalVector.angle, magnitude });
+		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
+		return normalVector.multiply(magnitude);
 	}
 	static velocityAfterCollision(velocity1, velocity2, mass1, mass2, restitutionCoef) {
 		return (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
