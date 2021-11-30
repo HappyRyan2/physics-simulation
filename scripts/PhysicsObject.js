@@ -43,22 +43,29 @@ class PhysicsObject {
 		c.translate(this.position.x, this.position.y);
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
-		this.shape.display(c, !(this.selected || this.isMouseHovered()));
+		this.shape.display(c, !this.selected);
 	}
 	displayVelocity(c) {
 		const VELOCITY_ARROW_COLOR = "rgb(0, 158, 250)";
 		const ARROW_LENGTH = 40;
-		if(this.selected || this.isMouseHovered() || !app.physicsWorld.objects.some(o => o.selected || o.isMouseHovered())) {
+		if(this.selected || !app.physicsWorld.objects.some(o => o.selected || o.isMouseHovered())) {
 			c.lineWidth = 3;
 			c.strokeStyle = VELOCITY_ARROW_COLOR;
 			c.fillStyle = VELOCITY_ARROW_COLOR;
 			utils.drawArrow(c, this.velocity.normalize().multiply(ARROW_LENGTH), this.position, "tail");
 		}
-		if(this.selected || this.isMouseHovered()) {
+		if(this.selected) {
 			const textLocation = this.position.add(new Vector(0, -ARROW_LENGTH));
 			c.textAlign = "center";
 			c.textBaseline = "middle";
 			c.fillText(`|V| = ${this.velocity.magnitude.toPrecision(3)}`, textLocation.x, textLocation.y);
+		}
+		if(this.isMouseHovered()) {
+			const mousePos = app.canvasIO.mouse;
+			const velocity = this.velocityOfPoint(mousePos);
+			c.strokeStyle = VELOCITY_ARROW_COLOR;
+			c.lineWidth = 1;
+			utils.drawArrow(c, velocity.multiply(ARROW_LENGTH).divide(this.velocity.magnitude), mousePos, "tail");
 		}
 	}
 

@@ -88,8 +88,8 @@ class PhysicsWorld {
 		}
 	}
 	displayCollisionInfo(c, collision) {
-		const displayObj1 = collision.obj1.selected || collision.obj1.isMouseHovered() || this.objects.every(o => !o.isMouseHovered() && !o.selected);
-		const displayObj2 = collision.obj2.selected || collision.obj2.isMouseHovered() || this.objects.every(o => !o.isMouseHovered() && !o.selected);
+		const displayObj1 = collision.obj1.selected || this.objects.every(o => !o.isMouseHovered() && !o.selected);
+		const displayObj2 = collision.obj2.selected || this.objects.every(o => !o.isMouseHovered() && !o.selected);
 		const DOT_SIZE = 7;
 		const FORCE_SCALE = 40;
 		c.fillStyle = "red";
