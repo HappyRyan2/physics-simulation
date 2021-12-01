@@ -71,10 +71,10 @@ class Line extends Shape {
 		/* Returns the distance between the line and the point, but with a positive / negative sign depending on which side of the line it is on. */
 		const distance = this.distanceFrom(point);
 		if(new Segment(point, negativePoint).intersects(this)) {
-			return -distance;
+			return distance;
 		}
 		else {
-			return distance;
+			return -distance;
 		}
 	}
 

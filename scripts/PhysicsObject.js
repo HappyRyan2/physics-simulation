@@ -94,10 +94,11 @@ class PhysicsObject {
 	}
 	movingToward(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject)) {
 		const TO_RADIANS = Math.PI / 180;
-		const normalLine = new Line(intersection, intersection.add(normalVector));
-		const distance1 = normalLine.signedDistance(intersection, physicsObject.position);
+		const tangentialVector = this.tangentialVector(physicsObject, intersection, normalVector);
+		const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
+		const distance1 = tangentialLine.signedDistance(intersection, physicsObject.position);
 		const nextPosition = intersection.rotateAbout(this.position.x, this.position.y, this.angularVelocity * TO_RADIANS).add(this.velocity);
-		const distance2 = normalLine.signedDistance(nextPosition, physicsObject.position);
+		const distance2 = tangentialLine.signedDistance(nextPosition, physicsObject.position);
 		return distance2 <= distance1;
 	}
 	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
@@ -124,8 +125,8 @@ class PhysicsObject {
 			return intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 	}
-	tangentialVector(physicsObject, intersection = this.intersection(physicsObject)) {
-		return this.normalVector(physicsObject, intersection).rotateAbout(0, 0, 90);
+	tangentialVector(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject, intersection)) {
+		return normalVector.rotateAbout(0, 0, 90);
 	}
 	normalVector(physicsObject, intersection = this.intersection(physicsObject)) {
 		const shape1 = this.transformedShape();
@@ -223,12 +224,10 @@ class PhysicsObject {
 		);
 		const velocityDifference = resultVelocity - resultVelocity2;
 		if(Math.abs(velocityDifference) < PhysicsObject.MIN_COLLISION_VELOCITY) {
-			if(resultVelocity < 0) {
-				resultVelocity = Math.min(resultVelocity, -PhysicsObject.MIN_COLLISION_VELOCITY);
+			if(velocityDifference === 0) {
+				resultVelocity = PhysicsObject.MIN_COLLISION_VELOCITY / 2;
 			}
-			else {
-				resultVelocity = Math.max(resultVelocity, PhysicsObject.MIN_COLLISION_VELOCITY);
-			}
+			resultVelocity *= PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2);
 		}
 		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
