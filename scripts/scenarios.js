@@ -1,54 +1,53 @@
 const scenarios = [
 	{
 		name: "falling-ball",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
-					shape: new Circle(width / 2, height / 2, 50),
+					shape: new Circle(0, 0, 50),
+					position: new Vector(width / 2, height / 2)
 				})
 			], 0.1);
 		}
 	},
 	{
 		name: "ball-collisions-different-elasticities",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(0, 100),
-					velocity: new Vector(3, 0),
+					velocity: new Vector(4, 0),
 					elasticity: 1
 				}),
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(width, 100),
-					velocity: new Vector(-3, 0),
+					velocity: new Vector(-4, 0),
 					elasticity: 1
 				}),
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(0, 250),
-					velocity: new Vector(3, 0),
+					velocity: new Vector(4, 0),
 					elasticity: 0.5
 				}),
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(width, 250),
-					velocity: new Vector(-3, 0),
+					velocity: new Vector(-4, 0),
 					elasticity: 0.5
 				}),
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(0, 400),
-					velocity: new Vector(3, 0),
+					velocity: new Vector(4, 0),
 					elasticity: 0.1
 				}),
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
 					position: new Vector(width, 400),
-					velocity: new Vector(-3, 0),
+					velocity: new Vector(-4, 0),
 					elasticity: 0.1
 				}),
 			]);
@@ -56,8 +55,7 @@ const scenarios = [
 	},
 	{
 		name: "2d-collision",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
@@ -75,8 +73,7 @@ const scenarios = [
 	},
 	{
 		name: "2d-collision-with-rotation",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: new Polygon([
@@ -97,8 +94,7 @@ const scenarios = [
 	},
 	{
 		name: "polygon-polygon-collision",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: Polygon.regularPolygon(3).scale(50).rotate(90),
@@ -118,8 +114,7 @@ const scenarios = [
 	},
 	{
 		name: "bouncing-ball",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: new Circle(0, 0, 50),
@@ -146,8 +141,7 @@ const scenarios = [
 	},
 	{
 		name: "falling-rectangle",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: new Polygon([
@@ -176,8 +170,7 @@ const scenarios = [
 	},
 	{
 		name: "slanted-falling-rectangle",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
 				new PhysicsObject({
 					shape: new Polygon([
@@ -206,8 +199,7 @@ const scenarios = [
 	},
 	{
 		name: "rectangle-falls-on-slope",
-		world: () => {
-			const { width, height } = app.canvasIO.canvas;
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			const FLOOR_SIZE = 150;
 			return new PhysicsWorld([
 				new PhysicsObject({
@@ -230,5 +222,32 @@ const scenarios = [
 				})
 			], 0.1);
 		}
+	},
+	{
+		name: "rectangle-falls-on-shallow-slope",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
+			const FLOOR_SIZE = 150;
+			return new PhysicsWorld([
+				new PhysicsObject({
+					shape: new Polygon(-50, -10, 50, -10, 50, 10, -50, 10),
+					position: new Vector(width / 2, 0),
+					elasticity: 0.1,
+					selected: true
+				}),
+				new PhysicsObject({
+					shape: new Polygon(
+						FLOOR_SIZE * 3, FLOOR_SIZE,
+						-FLOOR_SIZE * 3, FLOOR_SIZE,
+						-FLOOR_SIZE * 3, 0,
+						FLOOR_SIZE * 3, -FLOOR_SIZE
+					),
+					position: new Vector(width / 2, height / 2),
+					immovable: true,
+					antigravity: true,
+					elasticity: 0.1
+				})
+			], 0.1);
+		}
 	}
 ];
+const findScenario = name => scenarios.find(s => s.name === name);
