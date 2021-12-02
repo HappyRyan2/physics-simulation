@@ -10,6 +10,26 @@ class PhysicsWorld {
 		this.initialState = [];
 		this.history = [];
 	}
+	static fromString(string) {
+		const parsed = JSON.parse(string);
+		const objects = parsed.initialState;
+		return new PhysicsWorld(
+			objects.map(o => new PhysicsObject({
+				shape: o.shape.vertices ? new Polygon(o.shape.vertices.map(v => new Vector(v))) : new Circle(o.shape.position.x, o.shape.position.y, o.shape.radius),
+				position: new Vector(o.position),
+				velocity: new Vector(o.velocity),
+				rotation: o.rotation,
+				angularVelocity: o.angularVelocity,
+				inertialMass: o.inertialMass,
+				gravitationalMass: o.gravitationalMass,
+				rotationalInertia: o.rotationalInertia,
+				elasticity: o.elasticity,
+				antigravity: o.antigravity,
+				immovable: o.immovable,
+				selected: o.selected
+			})),
+		);
+	}
 
 	applyGravity() {
 		for(const obj of this.objects) {
@@ -178,5 +198,22 @@ testing.addUnit("PhysicsWorld recording", {
 		}
 		const string = world.historyString();
 		expect(string).toEqual(`{"initialState":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false}],"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
+	},
+	"can load a simulation from a string": () => {
+		const world = PhysicsWorld.fromString(`{"initialState":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false}],"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
+		const [obj] = world.objects;
+		expect(obj).toEqual(new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(0, 0),
+			velocity: new Vector(1, 0),
+			rotation: 0,
+			angularVelocity: 0,
+			inertialMass: 1,
+			gravitationalMass: 1,
+			rotationalInertia: 1,
+			elasticity: 0.5,
+			antigravity: false,
+			immovable: false
+		}));
 	}
 });
