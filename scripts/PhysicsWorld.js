@@ -5,6 +5,10 @@ class PhysicsWorld {
 		this.paused = false;
 
 		this.collisionInfo = []; // used for debugging
+
+		this.recording = false;
+		this.initialState = [];
+		this.history = [];
 	}
 
 	applyGravity() {
@@ -68,6 +72,9 @@ class PhysicsWorld {
 		for(const obj of this.objects) {
 			obj.updateVelocity();
 		}
+		if(this.recording) {
+			this.recordFrame();
+		}
 	}
 
 	display(c) {
@@ -122,4 +129,54 @@ class PhysicsWorld {
 			}
 		}
 	}
+
+	beginRecording() {
+		this.recording = true;
+		this.initialState = this.objects.map(o => ({
+			shape: o.shape,
+			position: o.position,
+			velocity: o.velocity,
+			rotation: o.rotation,
+			angularVelocity: o.angularVelocity,
+			inertialMass: o.inertialMass,
+			gravitationalMass: o.gravitationalMass,
+			rotationalInertia: o.rotationalInertia,
+			elasticity: o.elasticity,
+			antigravity: o.antigravity,
+			immovable: o.immovable,
+			selected: o.selected
+		}));
+	}
+	recordFrame() {
+		this.history.push(this.objects.map(o => ({
+			x: o.position.x,
+			y: o.position.y,
+			r: o.rotation
+		})));
+	}
+	historyString() {
+		return JSON.stringify({
+			initialState: this.initialState,
+			history: this.history
+		});
+	}
 }
+
+
+testing.addUnit("PhysicsWorld recording", {
+	"can record a simulation": () => {
+		const world = new PhysicsWorld([
+			new PhysicsObject({
+				shape: new Circle(0, 0, 1),
+				position: new Vector(0, 0),
+				velocity: new Vector(1, 0)
+			})
+		]);
+		world.beginRecording();
+		for(let i = 0; i < 3; i ++) {
+			world.update();
+		}
+		const string = world.historyString();
+		expect(string).toEqual(`{"initialState":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false}],"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
+	}
+});
