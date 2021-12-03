@@ -98,7 +98,11 @@ class PhysicsObject {
 		const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
 		const distance1 = tangentialLine.signedDistance(intersection, physicsObject.position);
 		const nextPosition = intersection.rotateAbout(this.position.x, this.position.y, this.angularVelocity * TO_RADIANS).add(this.velocity);
-		const distance2 = tangentialLine.signedDistance(nextPosition, physicsObject.position);
+		const nextTangentialLine = new Line(
+			tangentialLine.endpoint1.add(physicsObject.velocity),
+			tangentialLine.endpoint2.add(physicsObject.velocity)
+		);
+		const distance2 = nextTangentialLine.signedDistance(nextPosition, physicsObject.position.add(physicsObject.velocity));
 		return distance2 <= distance1;
 	}
 	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
