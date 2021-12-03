@@ -230,8 +230,16 @@ class PhysicsObject {
 		if(Math.abs(velocityDifference) < PhysicsObject.MIN_COLLISION_VELOCITY) {
 			if(velocityDifference === 0) {
 				resultVelocity = PhysicsObject.MIN_COLLISION_VELOCITY / 2;
+				if(intersection.add(normalVector).distanceFrom(physicsObject.position) < intersection.distanceFrom(physicsObject.position)) {
+					resultVelocity *= -1;
+				}
 			}
-			resultVelocity *= PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2);
+			else if(resultVelocity < 0) {
+				resultVelocity = -Math.abs(resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2));
+			}
+			else if(resultVelocity > 0) {
+				resultVelocity = Math.abs(resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2));
+			}
 		}
 		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
