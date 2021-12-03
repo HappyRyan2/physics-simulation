@@ -9,6 +9,8 @@ class PhysicsWorld {
 		this.recording = false;
 		this.initialState = [];
 		this.history = [];
+		this.playingRecord = false;
+		this.recordingFrame = 0;
 	}
 	static fromString(string) {
 		const parsed = JSON.parse(string);
@@ -85,6 +87,23 @@ class PhysicsWorld {
 	}
 
 	update() {
+		if(this.playingRecord) {
+			for(const [i, obj] of this.objects.entries()) {
+				const newPosition = this.history[this.recordingFrame][i];
+				if(this.recordingFrame !== 0) {
+					obj.velocity.x = newPosition.x - obj.position.x;
+					obj.velocity.y = newPosition.y - obj.position.y;
+				}
+				obj.position.x = newPosition.x;
+				obj.position.y = newPosition.y;
+				obj.rotation = newPosition.rotation;
+			}
+			this.recordingFrame ++;
+			if(this.recordingFrame >= this.history.length) {
+				this.recordingFrame = 0;
+			}
+			return;
+		}
 		this.applyGravity();
 		for(const obj of this.objects) {
 			obj.updatePosition();
@@ -114,6 +133,13 @@ class PhysicsWorld {
 			for(const collision of this.collisionInfo) {
 				this.displayCollisionInfo(c, collision);
 			}
+		}
+		if(this.playingRecord) {
+			c.fillStyle = "black";
+			c.textBaseline = "top";
+			c.textAlign = "left";
+			c.font = "20px monospace";
+			c.fillText(`(recorded)`, 0, 20);
 		}
 	}
 	displayCollisionInfo(c, collision) {
@@ -184,6 +210,17 @@ class PhysicsWorld {
 			initialState: this.initialState,
 			history: this.history
 		});
+	}
+	static playRecording(recordString) {
+		if(SCENARIO_TEST_DATA[recordString]) {
+			return this.playRecording(SCENARIO_TEST_DATA[recordString]);
+		}
+		const world = PhysicsWorld.fromString(recordString);
+		const parsed = JSON.parse(recordString);
+		world.initialState = parsed.initialState;
+		world.history = parsed.history;
+		world.playingRecord = true;
+		return world;
 	}
 }
 
