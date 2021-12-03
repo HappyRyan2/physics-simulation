@@ -50,7 +50,6 @@ class PhysicsWorld {
 				if(intersects && obj1.shouldCollide(obj2)) {
 					if(DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
 						this.display(app.canvasIO.ctx); // update screen with latest positions
-						obj1.displayCollisionInfo(obj2);
 						debugger;
 					}
 					if(DEBUG_SETTINGS.PAUSE_ON_COLLISION && app.frameCount > 1) {
