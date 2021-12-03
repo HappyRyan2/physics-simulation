@@ -475,8 +475,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
-		expect(collisionForce.x).toApproximatelyEqual(-1 - (PhysicsObject.MIN_COLLISION_VELOCITY / Math.SQRT2));
-		expect(collisionForce.y).toApproximatelyEqual(-1 - (PhysicsObject.MIN_COLLISION_VELOCITY / Math.SQRT2));
+		expect(collisionForce.x).toApproximatelyEqual(-1 - ((PhysicsObject.MIN_COLLISION_VELOCITY / 2) / Math.SQRT2));
+		expect(collisionForce.y).toApproximatelyEqual(-1 - ((PhysicsObject.MIN_COLLISION_VELOCITY / 2) / Math.SQRT2));
 	},
 	"works for equal-mass objects colliding at an angle": () => {
 		const obj1 = new PhysicsObject({
