@@ -92,23 +92,23 @@ class PhysicsObject {
 		const shape2 = physicsObject.transformedShape();
 		return shape1.intersects(shape2);
 	}
-	movingToward(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject)) {
+	movingToward(physicsObject, point = this.collisionForcePoint(physicsObject), normalVector = this.normalVector(physicsObject)) {
 		const TO_RADIANS = Math.PI / 180;
-		const tangentialVector = this.tangentialVector(physicsObject, intersection, normalVector);
-		const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
-		const distance1 = tangentialLine.signedDistance(intersection, physicsObject.position);
-		const nextPosition = intersection.rotateAbout(this.position.x, this.position.y, this.angularVelocity * TO_RADIANS).add(this.velocity);
+		const tangentialVector = this.tangentialVector(physicsObject, point, normalVector);
+		const tangentialLine = new Line(point, point.add(tangentialVector));
+		const distance1 = tangentialLine.signedDistance(point, physicsObject.position);
+		const nextPosition = point.rotateAbout(this.position.x, this.position.y, this.angularVelocity * TO_RADIANS).add(this.velocity);
 		const nextTangentialLine = new Line(
 			tangentialLine.endpoint1.add(physicsObject.velocity),
 			tangentialLine.endpoint2.add(physicsObject.velocity)
 		);
 		const distance2 = nextTangentialLine.signedDistance(nextPosition, physicsObject.position.add(physicsObject.velocity));
-		return distance2 <= distance1;
+		return distance2 - distance1 < PhysicsObject.MIN_COLLISION_VELOCITY;
 	}
 	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
 		if(!intersects) { return false; }
 		if(this.overlappedObjects.includes(physicsObject)) {
-			return this.movingToward(physicsObject);
+			return this.movingToward(physicsObject) || physicsObject.movingToward(this);
 		}
 		return true;
 	}
