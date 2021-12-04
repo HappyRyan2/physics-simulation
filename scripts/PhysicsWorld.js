@@ -28,7 +28,8 @@ class PhysicsWorld {
 				elasticity: o.elasticity,
 				antigravity: o.antigravity,
 				immovable: o.immovable,
-				selected: o.selected
+				selected: o.selected,
+				name: o.name
 			})),
 			parsed.initialState.gravitationalAcceleration
 		);
@@ -194,7 +195,8 @@ class PhysicsWorld {
 				elasticity: o.elasticity,
 				antigravity: o.antigravity,
 				immovable: o.immovable,
-				selected: o.selected
+				selected: o.selected,
+				name: o.name
 			}))
 		};
 	}
@@ -231,7 +233,8 @@ testing.addUnit("PhysicsWorld recording", {
 			new PhysicsObject({
 				shape: new Circle(0, 0, 1),
 				position: new Vector(0, 0),
-				velocity: new Vector(1, 0)
+				velocity: new Vector(1, 0),
+				name: "example-object"
 			})
 		]);
 		world.beginRecording();
@@ -239,10 +242,10 @@ testing.addUnit("PhysicsWorld recording", {
 			world.update();
 		}
 		const string = world.historyString();
-		expect(string).toEqual(`{"initialState":{"gravitationalAcceleration":0,"objects":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false}]},"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
+		expect(string).toEqual(`{"initialState":{"gravitationalAcceleration":0,"objects":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false,"name":"example-object"}]},"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
 	},
 	"can load a simulation from a string": () => {
-		const world = PhysicsWorld.fromString(`{"initialState":{"gravitationalAcceleration":1.23,"objects":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false}]},"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
+		const world = PhysicsWorld.fromString(`{"initialState":{"gravitationalAcceleration":1.23,"objects":[{"shape":{"position":{"x":0,"y":0},"radius":1},"position":{"x":0,"y":0},"velocity":{"x":1,"y":0},"rotation":0,"angularVelocity":0,"inertialMass":1,"gravitationalMass":1,"rotationalInertia":1,"elasticity":0.5,"antigravity":false,"immovable":false,"selected":false,"name":"example-object"}]},"history":[[{"x":1,"y":0,"r":0}],[{"x":2,"y":0,"r":0}],[{"x":3,"y":0,"r":0}]]}`);
 		const [obj] = world.objects;
 		expect(obj).toEqual(new PhysicsObject({
 			shape: new Circle(0, 0, 1),
@@ -255,7 +258,8 @@ testing.addUnit("PhysicsWorld recording", {
 			rotationalInertia: 1,
 			elasticity: 0.5,
 			antigravity: false,
-			immovable: false
+			immovable: false,
+			name: "example-object"
 		}));
 		expect(world.gravitationalAcceleration).toEqual(1.23);
 	}

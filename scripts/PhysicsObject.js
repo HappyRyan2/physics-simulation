@@ -14,6 +14,10 @@ class PhysicsObject {
 		this.antigravity = properties.antigravity ?? false;
 		this.immovable = properties.immovable ?? false;
 		this.selected = properties.selected ?? false;
+		if(!properties.name) {
+			console.warn(`No name provided for PhysicsObject.`);
+		}
+		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : `${this.shape.vertices.length}-sided polygon`}`;
 
 		this.overlappedObjects = [];
 	}
@@ -291,47 +295,51 @@ class PhysicsObject {
 
 testing.addUnit("PhysicsObject.intersects()", {
 	"returns true when the objects intersect": () => {
-		const obj1 = new PhysicsObject({ shape: new Circle(0, 0, 5) });
-		const obj2 = new PhysicsObject({ shape: new Polygon(
-			1, -10,
-			1, 10,
-			10, 0
-		) });
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 5),
+			name: "circle-at-origin"
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Polygon(1, -10, 1, 10, 10, 0),
+			name: "triangle"
+		});
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
 	},
 	"returns false when the objects do not intersect": () => {
-		const obj1 = new PhysicsObject({ shape: new Circle(20, 0, 5) });
-		const obj2 = new PhysicsObject({ shape: new Polygon(
-			1, -10,
-			1, 10,
-			10, 0
-		) });
+		const obj1 = new PhysicsObject({
+			shape: new Circle(20, 0, 5),
+			name: "circle-far-right"
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Polygon(1, -10, 1, 10, 10, 0),
+			name: "triangle-near-origin"
+		});
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(false);
 	},
 	"works when the intersecting objects have nonzero position": () => {
 		const obj1 = new PhysicsObject({
 			shape: new Circle(20, 0, 5),
-			position: new Vector(-20, 0)
+			position: new Vector(-20, 0),
+			name: "circle-at-origin"
 		});
-		const obj2 = new PhysicsObject({ shape: new Polygon(
-			1, -1,
-			-1, -1,
-			0, 1
-		) });
+		const obj2 = new PhysicsObject({
+			shape: new Polygon(1, -1, -1, -1, 0, 1),
+			name: "small-triangle"
+		});
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
 	},
 	"works when the intersecting objects have nonzero rotation": () => {
-		const obj1 = new PhysicsObject({ shape: new Circle(50, 0, 5) });
+		const obj1 = new PhysicsObject({
+			shape: new Circle(50, 0, 5),
+			name: "right-circle"
+		});
 		const obj2 = new PhysicsObject({
-			shape: new Polygon(
-				1, -1,
-				-1, -1,
-				0, 100
-			),
-			rotation: -Math.PI / 2
+			shape: new Polygon(1, -1, -1, -1, 0, 100),
+			rotation: -Math.PI / 2,
+			name: "rotated-triangle-pointing-right"
 		});
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
@@ -343,12 +351,14 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			shape: new Circle(0, 0, 1),
 			position: new Vector(-1, 0),
 			velocity: new Vector(1, 0),
-			elasticity: 1
+			elasticity: 1,
+			name: "left-circle-moving-right"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
-			elasticity: 1
+			elasticity: 1,
+			name: "unmoving-circle"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -360,13 +370,15 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			shape: new Circle(0, 0, 1),
 			position: new Vector(-1, 0),
 			velocity: new Vector(1, 0),
-			elasticity: 1
+			elasticity: 1,
+			name: "left-circle-moving-right"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
 			velocity: new Vector(-1, 0),
-			elasticity: 1
+			elasticity: 1,
+			name: "right-circle-moving-left"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -378,13 +390,15 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			shape: new Circle(0, 0, 1),
 			position: new Vector(-1, 0),
 			velocity: new Vector(1, 0),
-			elasticity: 0.5
+			elasticity: 0.5,
+			name: "left-circle-moving-right"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
 			velocity: new Vector(-1, 0),
-			elasticity: 0.5
+			elasticity: 0.5,
+			name: "right-circle-moving-left"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -397,14 +411,16 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			position: new Vector(-1, 0),
 			velocity: new Vector(1, 0),
 			mass: 15,
-			elasticity: 1
+			elasticity: 1,
+			name: "left-circle-moving-right"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
 			velocity: new Vector(-1, 0),
 			mass: 15,
-			elasticity: 1
+			elasticity: 1,
+			name: "right-circle-moving-left"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -417,13 +433,15 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			position: new Vector(-1, 0),
 			velocity: new Vector(1, 0),
 			mass: 2,
-			elasticity: 1
+			elasticity: 1,
+			name: "left-circle-moving-right"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
 			velocity: new Vector(-1, 0),
-			elasticity: 1
+			elasticity: 1,
+			name: "right-circle-moving-left"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -435,13 +453,15 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(-1, -1),
 			velocity: new Vector(1, 1),
-			elasticity: 1
+			elasticity: 1,
+			name: "top-left-circle"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(1, 1),
 			velocity: new Vector(-1, -1),
-			elasticity: 1
+			elasticity: 1,
+			name: "bottom-right-circle"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -455,13 +475,14 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			velocity: new Vector(1, 1),
 			mass: 2,
 			elasticity: 1,
-
+			name: "top-left-circle"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(1, 1),
 			velocity: new Vector(-1, -1),
-			elasticity: 1
+			elasticity: 1,
+			name: "bottom-right-circle"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -473,13 +494,15 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(-1, -1),
 			velocity: new Vector(1, 1),
-			elasticity: 0
+			elasticity: 0,
+			name: "top-left-circle"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
 			position: new Vector(1, 1),
 			velocity: new Vector(-1, -1),
-			elasticity: 0
+			elasticity: 0,
+			name: "bottom-right-circle"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -491,13 +514,14 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			shape: new Circle(0, 0, 1),
 			position: new Vector(-1, 0),
 			velocity: new Vector(1, -1),
-			elasticity: 1
+			elasticity: 1,
+			name: "left-circle-moving-diagonally"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 1),
 			position: new Vector(1, 0),
-			velocity: new Vector(0, 0),
-			elasticity: 1
+			elasticity: 1,
+			name: "unmoving-right-circle"
 		});
 
 		const collisionForce = obj1.collisionForce(obj2);
@@ -509,29 +533,37 @@ testing.addUnit("PhysicsObject.intersection()", {
 	"returns the correct result for two circles": () => {
 		const circle1 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
-			position: new Vector(-1, -1)
+			position: new Vector(-1, -1),
+			name: "top-left-circle"
 		});
 		const circle2 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
-			position: new Vector(1, 1)
+			position: new Vector(1, 1),
+			name: "bottom-right-circle"
 		});
 		const intersection = circle1.intersection(circle2);
 		expect(intersection).toEqual(new Vector(0, 0));
 	},
 	"returns the correct result for a circle and a polygon": () => {
-		const circle = new PhysicsObject({ shape: new Circle(0, 0, 5) });
+		const circle = new PhysicsObject({
+			shape: new Circle(0, 0, 5),
+			name: "circle-at-origin"
+		});
 		const polygon = new PhysicsObject({
-			shape: new Polygon(1, 0, 6, 5, 6, -5)
+			shape: new Polygon(1, 0, 6, 5, 6, -5),
+			name: "triangle-to-right"
 		});
 		const intersection = circle.intersection(polygon);
 		expect(intersection).toEqual(new Vector(4, 0));
 	},
 	"returns the correct result for two polygons": () => {
 		const polygon1 = new PhysicsObject({
-			shape: new Polygon(-4, -4, 4, -4, 4, 4, -4, 4)
+			shape: new Polygon(-4, -4, 4, -4, 4, 4, -4, 4),
+			name: "square-at-origin"
 		});
 		const polygon2 = new PhysicsObject({
-			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3)
+			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3),
+			name: "square-top-right"
 		});
 		const intersection = polygon1.intersection(polygon2);
 		expect(intersection.x).toApproximatelyEqual(4);
@@ -542,29 +574,37 @@ testing.addUnit("PhysicsObject.normalVector()", {
 	"returns the correct result for two circles": () => {
 		const circle1 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
-			position: new Vector(-1, -1)
+			position: new Vector(-1, -1),
+			name: "top-left-circle"
 		});
 		const circle2 = new PhysicsObject({
 			shape: new Circle(0, 0, Math.SQRT2),
-			position: new Vector(1, 1)
+			position: new Vector(1, 1),
+			name: "bottom-right-circle"
 		});
 		const normalVector = circle1.normalVector(circle2, new Vector(0, 0));
 		expect(normalVector.angle).toEqual(135); // 135 / -45
 	},
 	"returns the correct result for a circle and a polygon": () => {
-		const circle = new PhysicsObject({ shape: new Circle(0, 0, 5) });
+		const circle = new PhysicsObject({
+			shape: new Circle(0, 0, 5),
+			name: "circle-at-origin"
+		});
 		const polygon = new PhysicsObject({
-			shape: new Polygon(4, 0, 6, 1, 6, -1)
+			shape: new Polygon(4, 0, 6, 1, 6, -1),
+			name: "triangle-to-right"
 		});
 		const normalVector = circle.normalVector(polygon);
 		expect(normalVector.angle).toEqual(0); // 0 / -180
 	},
 	"returns the correct result for two polygons": () => {
 		const polygon1 = new PhysicsObject({
-			shape: new Polygon(-4, -4, 4, -4, 4, 4, -4, 4)
+			shape: new Polygon(-4, -4, 4, -4, 4, 4, -4, 4),
+			name: "square-at-origin"
 		});
 		const polygon2 = new PhysicsObject({
-			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3)
+			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3),
+			name: "bottom-rightsquare"
 		});
 		const normalVector = polygon1.normalVector(polygon2, new Vector(4, 0));
 		expect(normalVector.angle).toEqual(180); // 0 / 180 / -180
@@ -575,7 +615,8 @@ testing.addUnit("PhysicsObject.velocityOfPoint()", {
 		const obj = new PhysicsObject({
 			shape: new Circle(0, 0, 3),
 			position: new Vector(5, 10),
-			velocity: new Vector(123, 456)
+			velocity: new Vector(123, 456),
+			name: "circle-moving-to-bottom-right"
 		});
 		const velocity = obj.velocityOfPoint(new Vector(4, 11));
 		expect(velocity).toEqual(new Vector(123, 456));
@@ -585,7 +626,8 @@ testing.addUnit("PhysicsObject.velocityOfPoint()", {
 			shape: new Circle(0, 0, 3),
 			position: new Vector(5, 10),
 			velocity: new Vector(123, 456),
-			angularVelocity: Math.PI / 2 // 90 degrees per frame, clockwise
+			angularVelocity: Math.PI / 2, // 90 degrees per frame, clockwise
+			name: "moving-object-rotating-counterclockwise"
 		});
 		const velocity = obj.velocityOfPoint(new Vector(8, 10));
 		expect(velocity).toEqual(new Vector(123 - 3, 456 + 3));
@@ -593,28 +635,26 @@ testing.addUnit("PhysicsObject.velocityOfPoint()", {
 });
 testing.addUnit("PhysicsObject.collisionForcePoint()", {
 	"correctly calculates the point when the object is a circle": () => {
-		const circle = new PhysicsObject({ shape: new Circle(0, 0, 1) });
+		const circle = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			name: "circle-at-origin"
+		});
 		const polygon = new PhysicsObject({
-			shape: new Polygon(
-				2, -1,
-				-1, 2,
-				0, 3,
-				3, 0
-			)
+			shape: new Polygon(2, -1, -1, 2, 0, 3, 3, 0),
+			name: "top-right-rotated-rectangle"
 		});
 		const point = circle.collisionForcePoint(polygon);
 		expect(point.x).toApproximatelyEqual(Math.SQRT2 / 2);
 		expect(point.y).toApproximatelyEqual(Math.SQRT2 / 2);
 	},
 	"correctly calculates the point when the object is a polygon": () => {
-		const circle = new PhysicsObject({ shape: new Circle(0, 0, 2) });
+		const circle = new PhysicsObject({
+			shape: new Circle(0, 0, 2),
+			name: "circle-at-origin"
+		});
 		const polygon = new PhysicsObject({
-			shape: new Polygon(
-				1, 1,
-				3, 1,
-				3, 3,
-				1, 3
-			)
+			shape: new Polygon(1, 1, 3, 1, 3, 3, 1, 3),
+			name: "bottom-right-square"
 		});
 		const point = polygon.collisionForcePoint(circle);
 		expect(point.x).toApproximatelyEqual(1);
@@ -627,13 +667,15 @@ testing.addUnit("PhysicsObject collisions", {
 			shape: new Circle(0, 0, 2),
 			position: new Vector(-9, 0),
 			velocity: new Vector(2, 0),
-			elasticity: 0.5
+			elasticity: 0.5,
+			name: "left-circle-moving-right"
 		});
 		const obj2 = new PhysicsObject({
 			shape: new Circle(0, 0, 2),
 			position: new Vector(9, 0),
 			velocity: new Vector(-2, 0),
-			elasticity: 0.5
+			elasticity: 0.5,
+			name: "right-circle-moving-left"
 		});
 		const world = new PhysicsWorld([obj1, obj2]);
 
