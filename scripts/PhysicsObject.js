@@ -96,28 +96,6 @@ class PhysicsObject {
 		const shape2 = physicsObject.transformedShape();
 		return shape1.intersects(shape2);
 	}
-	movingToward(physicsObject, normalVector = this.normalVector(physicsObject)) {
-		const intersection = this.intersection(physicsObject);
-		const p1 = this.collisionForcePoint(physicsObject, normalVector, intersection);
-		const p2 = physicsObject.collisionForcePoint(this, normalVector, intersection);
-		const v1 = this.velocityOfPoint(p1).scalarProjection(normalVector);
-		const v2 = physicsObject.velocityOfPoint(p2).scalarProjection(normalVector);
-		if(intersection.add(normalVector).distanceFrom(this.position) < intersection.distanceFrom(this.position)) {
-			// `normalVector` is pointing toward `this`
-			return v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY;
-		}
-		else {
-			// `normalVector` is pointing toward `physicsObject`
-			return v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY;
-		}
-	}
-	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
-		if(!intersects) { return false; }
-		if(this.overlappedObjects.includes(physicsObject)) {
-			return this.movingToward(physicsObject) || physicsObject.movingToward(this);
-		}
-		return true;
-	}
 	intersection(physicsObject) {
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
@@ -134,9 +112,6 @@ class PhysicsObject {
 			const intersections = Shape.polygonIntersections(shape1, shape2);
 			return intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
-	}
-	tangentialVector(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject, intersection)) {
-		return normalVector.rotateAbout(0, 0, 90);
 	}
 	normalVector(physicsObject, intersection = this.intersection(physicsObject)) {
 		const shape1 = this.transformedShape();
@@ -161,41 +136,8 @@ class PhysicsObject {
 		}
 		return [intersection, normalVector];
 	}
-	checkForCollisions(physicsObject, intersects = this.intersects(physicsObject)) {
-		if(this.shouldCollide(physicsObject, intersects)) {
-			const force = this.collisionForce(physicsObject);
-			const force2 = physicsObject.collisionForce(this);
-			const point1 = this.collisionForcePoint(physicsObject);
-			const point2 = physicsObject.collisionForcePoint(this);
-			this.applyForce(force, point1);
-			physicsObject.applyForce(force2, point2);
-		}
-	}
-	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject), intersection = this.intersection(physicsObject)) {
-		if(this.shape instanceof Circle) {
-			return (
-				this.intersection(physicsObject).subtract(this.position)
-				.normalize()
-				.multiply(this.shape.radius)
-				.add(this.position)
-			);
-		}
-		else if(this.shape instanceof Polygon) {
-			const tangentialVector = normalVector.rotateAbout(0, 0, 90);
-			const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
-			const shape = this.transformedShape();
-			const vertices = shape.vertices.filter((v, i) =>
-				physicsObject.transformedShape().containsPoint(shape.vertices[i]) &&
-				!(new Segment(shape.vertices[i], physicsObject.position).intersects(tangentialLine))
-			);
-			if(vertices.length === 0) {
-				return this.intersection(physicsObject);
-			}
-			else {
-				const weights = vertices.map(v => tangentialLine.distanceFrom(v));
-				return utils.weightedVectorAverage(vertices, weights);
-			}
-		}
+	tangentialVector(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject, intersection)) {
+		return normalVector.rotateAbout(0, 0, 90);
 	}
 
 	velocityOfPoint(point) {
@@ -206,8 +148,57 @@ class PhysicsObject {
 		point = point.add(this.position);
 		return point.subtract(originalPoint).add(this.velocity);
 	}
+	movingToward(physicsObject, normalVector = this.normalVector(physicsObject)) {
+		const intersection = this.intersection(physicsObject);
+		const p1 = this.collisionForcePoint(physicsObject, normalVector, intersection);
+		const p2 = physicsObject.collisionForcePoint(this, normalVector, intersection);
+		const v1 = this.velocityOfPoint(p1).scalarProjection(normalVector);
+		const v2 = physicsObject.velocityOfPoint(p2).scalarProjection(normalVector);
+		if(intersection.add(normalVector).distanceFrom(this.position) < intersection.distanceFrom(this.position)) {
+			// `normalVector` is pointing toward `this`
+			return v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY;
+		}
+		else {
+			// `normalVector` is pointing toward `physicsObject`
+			return v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY;
+		}
+	}
+	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
+		if(!intersects) { return false; }
+		if(this.overlappedObjects.includes(physicsObject)) {
+			return this.movingToward(physicsObject) || physicsObject.movingToward(this);
+		}
+		return true;
+	}
 
 	static MIN_COLLISION_VELOCITY = 0.2;
+	static velocityAfterCollision(velocity1, velocity2, mass1, mass2, restitutionCoef) {
+		return (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
+	}
+	static collisionForceFromVelocity(physicsObject, normalVector, point, finalVelocity) {
+		const { x: nX, y: nY } = normalVector;
+		const { x: pX, y: pY } = physicsObject.position;
+		const { x: vX, y: vY } = physicsObject.velocity;
+		const w = physicsObject.angularVelocity;
+		const { x: iX, y: iY } = point;
+		const m = physicsObject.inertialMass;
+		const iR = physicsObject.rotationalInertia;
+		const r = physicsObject.position.distanceFrom(point);
+		const theta = normalVector.angle - (point.subtract(physicsObject.position).angle);
+		const sinTheta = Math.sin(theta * Math.PI / 180);
+		const vF = finalVelocity;
+		const rC = PhysicsObject.ROTATION_CONSTANT;
+
+		const result1 = (vF - nX * vX - nY * vY - w * (nX * pY - nX * iY + nY * iX - nY * pX)) / ((1 / m) + r * sinTheta * rC * (nX * pY - nX * iY + nY * iX - nY * pX) / iR);
+		const result2 = (vF - nX * vX - nY * vY - w * (nX * pY - nX * iY + nY * iX - nY * pX)) / ((1 / m) - r * sinTheta * rC * (nX * pY - nX * iY + nY * iX - nY * pX) / iR);
+		return [result1, result2].min(magnitude => {
+			const obj = physicsObject.clone();
+			const force = new Vector({ angle: normalVector.angle, magnitude: magnitude });
+			obj.applyForce(force, point);
+			obj.updateVelocity();
+			return Math.dist(finalVelocity, obj.velocityOfPoint(point).scalarProjection(normalVector));
+		});
+	}
 	collisionForce(physicsObject) {
 		if(this.immovable) {
 			return physicsObject.collisionForce(this).multiply(-1);
@@ -252,39 +243,41 @@ class PhysicsObject {
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint1, resultVelocity);
 		return normalVector.multiply(magnitude);
 	}
-	static velocityAfterCollision(velocity1, velocity2, mass1, mass2, restitutionCoef) {
-		return (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
+	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject), intersection = this.intersection(physicsObject)) {
+		if(this.shape instanceof Circle) {
+			return (
+				this.intersection(physicsObject).subtract(this.position)
+				.normalize()
+				.multiply(this.shape.radius)
+				.add(this.position)
+			);
+		}
+		else if(this.shape instanceof Polygon) {
+			const tangentialVector = normalVector.rotateAbout(0, 0, 90);
+			const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
+			const shape = this.transformedShape();
+			const vertices = shape.vertices.filter((v, i) =>
+				physicsObject.transformedShape().containsPoint(shape.vertices[i]) &&
+				!(new Segment(shape.vertices[i], physicsObject.position).intersects(tangentialLine))
+			);
+			if(vertices.length === 0) {
+				return this.intersection(physicsObject);
+			}
+			else {
+				const weights = vertices.map(v => tangentialLine.distanceFrom(v));
+				return utils.weightedVectorAverage(vertices, weights);
+			}
+		}
 	}
-	static collisionForce1D(velocity1, velocity2, mass1, mass2, restitutionCoef) {
-		const resultVelocity = (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
-		const changeInVelocity = velocity1 - resultVelocity;
-		const forceMagnitude = changeInVelocity * mass1;
-		return new Vector({ angle: 180, magnitude: forceMagnitude });
-	}
-
-	static collisionForceFromVelocity(physicsObject, normalVector, point, finalVelocity) {
-		const { x: nX, y: nY } = normalVector;
-		const { x: pX, y: pY } = physicsObject.position;
-		const { x: vX, y: vY } = physicsObject.velocity;
-		const w = physicsObject.angularVelocity;
-		const { x: iX, y: iY } = point;
-		const m = physicsObject.inertialMass;
-		const iR = physicsObject.rotationalInertia;
-		const r = physicsObject.position.distanceFrom(point);
-		const theta = normalVector.angle - (point.subtract(physicsObject.position).angle);
-		const sinTheta = Math.sin(theta * Math.PI / 180);
-		const vF = finalVelocity;
-		const rC = PhysicsObject.ROTATION_CONSTANT;
-
-		const result1 = (vF - nX * vX - nY * vY - w * (nX * pY - nX * iY + nY * iX - nY * pX)) / ((1 / m) + r * sinTheta * rC * (nX * pY - nX * iY + nY * iX - nY * pX) / iR);
-		const result2 = (vF - nX * vX - nY * vY - w * (nX * pY - nX * iY + nY * iX - nY * pX)) / ((1 / m) - r * sinTheta * rC * (nX * pY - nX * iY + nY * iX - nY * pX) / iR);
-		return [result1, result2].min(magnitude => {
-			const obj = physicsObject.clone();
-			const force = new Vector({ angle: normalVector.angle, magnitude: magnitude });
-			obj.applyForce(force, point);
-			obj.updateVelocity();
-			return Math.dist(finalVelocity, obj.velocityOfPoint(point).scalarProjection(normalVector));
-		});
+	checkForCollisions(physicsObject, intersects = this.intersects(physicsObject)) {
+		if(this.shouldCollide(physicsObject, intersects)) {
+			const force = this.collisionForce(physicsObject);
+			const force2 = physicsObject.collisionForce(this);
+			const point1 = this.collisionForcePoint(physicsObject);
+			const point2 = physicsObject.collisionForcePoint(this);
+			this.applyForce(force, point1);
+			physicsObject.applyForce(force2, point2);
+		}
 	}
 
 	boundingBox() {
