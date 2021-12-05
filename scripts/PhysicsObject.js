@@ -199,18 +199,9 @@ class PhysicsObject {
 			return Math.dist(finalVelocity, obj.velocityOfPoint(point).scalarProjection(normalVector));
 		});
 	}
-	collisionForce(physicsObject) {
-		if(this.immovable) {
-			return physicsObject.collisionForce(this).multiply(-1);
-		}
+	velocityAfterCollision(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject), forcePoint1 = this.collisionForcePoint(physicsObject), forcePoint2 = physicsObject.collisionForcePoint(this)) {
 		const restitutionCoef = (this.elasticity + physicsObject.elasticity) / 2;
-
-		const intersection = this.intersection(physicsObject);
-		const normalVector = this.normalVector(physicsObject, intersection);
-
 		const LARGE_NUMBER = 1e6;
-		const forcePoint1 = this.collisionForcePoint(physicsObject, normalVector, intersection);
-		const forcePoint2 = physicsObject.collisionForcePoint(this, normalVector, intersection);
 		let resultVelocity = PhysicsObject.velocityAfterCollision(
 			this.velocityOfPoint(forcePoint1).scalarProjection(normalVector),
 			physicsObject.velocityOfPoint(forcePoint2).scalarProjection(normalVector),
@@ -240,7 +231,17 @@ class PhysicsObject {
 				resultVelocity = Math.abs(resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2));
 			}
 		}
-		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint1, resultVelocity);
+		return resultVelocity;
+	}
+	collisionForce(physicsObject) {
+		if(this.immovable) {
+			return physicsObject.collisionForce(this).multiply(-1);
+		}
+		const intersection = this.intersection(physicsObject);
+		const normalVector = this.normalVector(physicsObject, intersection);
+		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
+		const resultVelocity = this.velocityAfterCollision(physicsObject, intersection, normalVector, forcePoint);
+		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
 		return normalVector.multiply(magnitude);
 	}
 	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject), intersection = this.intersection(physicsObject)) {
