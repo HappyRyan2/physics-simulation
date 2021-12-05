@@ -96,18 +96,20 @@ class PhysicsObject {
 		const shape2 = physicsObject.transformedShape();
 		return shape1.intersects(shape2);
 	}
-	movingToward(physicsObject, point = this.collisionForcePoint(physicsObject), normalVector = this.normalVector(physicsObject)) {
-		const TO_RADIANS = Math.PI / 180;
-		const tangentialVector = this.tangentialVector(physicsObject, point, normalVector);
-		const tangentialLine = new Line(point, point.add(tangentialVector));
-		const distance1 = tangentialLine.signedDistance(point, physicsObject.position);
-		const nextPosition = point.rotateAbout(this.position.x, this.position.y, this.angularVelocity * TO_RADIANS).add(this.velocity);
-		const nextTangentialLine = new Line(
-			tangentialLine.endpoint1.add(physicsObject.velocity),
-			tangentialLine.endpoint2.add(physicsObject.velocity)
-		);
-		const distance2 = nextTangentialLine.signedDistance(nextPosition, physicsObject.position.add(physicsObject.velocity));
-		return distance2 - distance1 < PhysicsObject.MIN_COLLISION_VELOCITY;
+	movingToward(physicsObject, normalVector = this.normalVector(physicsObject)) {
+		const intersection = this.intersection(physicsObject);
+		const p1 = this.collisionForcePoint(physicsObject, normalVector, intersection);
+		const p2 = physicsObject.collisionForcePoint(this, normalVector, intersection);
+		const v1 = this.velocityOfPoint(p1).scalarProjection(normalVector);
+		const v2 = physicsObject.velocityOfPoint(p2).scalarProjection(normalVector);
+		if(intersection.add(normalVector).distanceFrom(this.position) < intersection.distanceFrom(this.position)) {
+			// `normalVector` is pointing toward `this`
+			return v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY;
+		}
+		else {
+			// `normalVector` is pointing toward `physicsObject`
+			return v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY;
+		}
 	}
 	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
 		if(!intersects) { return false; }
@@ -216,16 +218,18 @@ class PhysicsObject {
 		const normalVector = this.normalVector(physicsObject, intersection);
 
 		const LARGE_NUMBER = 1e6;
+		const forcePoint1 = this.collisionForcePoint(physicsObject, normalVector, intersection);
+		const forcePoint2 = physicsObject.collisionForcePoint(this, normalVector, intersection);
 		let resultVelocity = PhysicsObject.velocityAfterCollision(
-			this.velocityOfPoint(intersection).scalarProjection(normalVector),
-			physicsObject.velocityOfPoint(intersection).scalarProjection(normalVector),
+			this.velocityOfPoint(forcePoint1).scalarProjection(normalVector),
+			physicsObject.velocityOfPoint(forcePoint2).scalarProjection(normalVector),
 			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
 			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			restitutionCoef
 		);
 		let resultVelocity2 = PhysicsObject.velocityAfterCollision(
-			physicsObject.velocityOfPoint(intersection).scalarProjection(normalVector),
-			this.velocityOfPoint(intersection).scalarProjection(normalVector),
+			physicsObject.velocityOfPoint(forcePoint2).scalarProjection(normalVector),
+			this.velocityOfPoint(forcePoint1).scalarProjection(normalVector),
 			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
 			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
 			restitutionCoef
@@ -245,8 +249,7 @@ class PhysicsObject {
 				resultVelocity = Math.abs(resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2));
 			}
 		}
-		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
-		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
+		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint1, resultVelocity);
 		return normalVector.multiply(magnitude);
 	}
 	static velocityAfterCollision(velocity1, velocity2, mass1, mass2, restitutionCoef) {
