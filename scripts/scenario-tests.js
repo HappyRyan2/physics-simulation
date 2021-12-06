@@ -24,6 +24,7 @@
 		}
 	}
 	testing.addUnit("PhysicsWorld.update()", tests);
+	testing.units[testing.units.length - 1].isSlow = true;
 	if(numWithoutTests !== 0) {
 		console.warn(`${numWithoutTests} scenarios are untested.`);
 	}
