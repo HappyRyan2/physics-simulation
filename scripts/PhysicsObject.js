@@ -220,15 +220,16 @@ class PhysicsObject {
 		if(Math.abs(velocityDifference) < PhysicsObject.MIN_COLLISION_VELOCITY) {
 			if(velocityDifference === 0) {
 				resultVelocity = PhysicsObject.MIN_COLLISION_VELOCITY / 2;
-				if(intersection.add(normalVector).distanceFrom(physicsObject.position) < intersection.distanceFrom(physicsObject.position)) {
-					resultVelocity *= -1;
-				}
 			}
-			else if(resultVelocity < 0) {
-				resultVelocity = -Math.abs(resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2));
+			else {
+				resultVelocity = resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (Math.abs(resultVelocity) + Math.abs(resultVelocity2));
 			}
-			else if(resultVelocity > 0) {
-				resultVelocity = Math.abs(resultVelocity * PhysicsObject.MIN_COLLISION_VELOCITY / (resultVelocity + resultVelocity2));
+			if(intersection.add(normalVector).distanceFrom(physicsObject.position) < intersection.distanceFrom(physicsObject.position)) {
+				// normalVector is pointing toward physicsObject
+				resultVelocity = -Math.abs(resultVelocity);
+			}
+			else {
+				resultVelocity = Math.abs(resultVelocity);
 			}
 		}
 		return resultVelocity;
@@ -669,6 +670,30 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			velocity: new Vector(PhysicsObject.MIN_COLLISION_VELOCITY / 10, 0),
 			name: "right-circle-moving-right",
 			elasticity: 0
+		});
+		const intersection = new Vector(0, 0);
+		const normalVector = new Vector(1, 0);
+		const forcePoint = new Vector(0, 0);
+
+		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
+		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
+		expect(finalVelocity1).toEqual(-PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+		expect(finalVelocity2).toEqual(PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+	},
+	"works when the object's final velocities are nonzero but less than the minimum collision velocity": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(-1, 0),
+			velocity: new Vector(1, 0),
+			name: "left-circle-moving-right",
+			elasticity: 0.01
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(1, 0),
+			velocity: new Vector(-1, 0),
+			name: "right-circle-moving-left",
+			elasticity: 0.01
 		});
 		const intersection = new Vector(0, 0);
 		const normalVector = new Vector(1, 0);
