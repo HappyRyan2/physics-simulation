@@ -630,6 +630,80 @@ testing.addUnit("PhysicsObject.velocityOfPoint()", {
 		expect(velocity).toEqual(new Vector(123 - 3, 456 + 3));
 	}
 });
+testing.addUnit("PhysicsObject.velocityAfterCollision()", {
+	"works in the basic case": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(-1, 0),
+			velocity: new Vector(1, 0),
+			name: "left-circle-moving-right",
+			elasticity: 0.6
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(1, 0),
+			velocity: new Vector(-1, 0),
+			name: "right-circle-moving-left",
+			elasticity: 0.4
+		});
+		const intersection = new Vector(0, 0);
+		const normalVector = new Vector(1, 0);
+		const forcePoint = new Vector(0, 0);
+
+		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
+		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
+		expect(finalVelocity1).toEqual(-0.5);
+		expect(finalVelocity2).toEqual(0.5);
+	},
+	"works when the objects are already moving away from each other but not quickly enough": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(-1, 0),
+			velocity: new Vector(-PhysicsObject.MIN_COLLISION_VELOCITY / 10, 0),
+			name: "left-circle-moving-left",
+			elasticity: 0
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(1, 0),
+			velocity: new Vector(PhysicsObject.MIN_COLLISION_VELOCITY / 10, 0),
+			name: "right-circle-moving-right",
+			elasticity: 0
+		});
+		const intersection = new Vector(0, 0);
+		const normalVector = new Vector(1, 0);
+		const forcePoint = new Vector(0, 0);
+
+		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
+		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
+		expect(finalVelocity1).toEqual(-PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+		expect(finalVelocity2).toEqual(PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+	},
+	"works when the objects would have zero velocity after colliding": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(-1, 0),
+			velocity: new Vector(1, 0),
+			name: "left-circle-moving-right",
+			elasticity: 0
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(1, 0),
+			velocity: new Vector(-1, 0),
+			name: "right-circle-moving-left",
+			elasticity: 0
+		});
+		const intersection = new Vector(0, 0);
+		const normalVector = new Vector(1, 0);
+		const forcePoint = new Vector(0, 0);
+
+		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
+		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
+		expect(finalVelocity1).toEqual(-PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+		expect(finalVelocity2).toEqual(PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+	}
+});
 testing.addUnit("PhysicsObject.collisionForcePoint()", {
 	"correctly calculates the point when the object is a circle": () => {
 		const circle = new PhysicsObject({
