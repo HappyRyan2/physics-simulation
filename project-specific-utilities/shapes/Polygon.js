@@ -79,6 +79,15 @@ class Polygon extends Shape {
 		}
 		return new Polygon(points);
 	}
+	static rectangle(width, height) {
+		/* returns a rectangle with the given dimensions centered at (0, 0). */
+		return new Polygon(
+			-width / 2, -height / 2,
+			width / 2, -height / 2,
+			width / 2, height / 2,
+			-width / 2, height / 2
+		);
+	}
 
 	boundingBox() {
 		const left = this.vertices.min(v => v.x).x;
