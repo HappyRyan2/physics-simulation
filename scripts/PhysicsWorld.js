@@ -49,6 +49,8 @@ class PhysicsWorld {
 			const obj1 = this.objects[i];
 			for(let j = i + 1; j < this.objects.length; j ++) {
 				const obj2 = this.objects[j];
+				obj1.cache = {};
+				obj2.cache = {};
 				const intersects = obj1.intersects(obj2);
 				if(intersects) {
 					newIntersections.push([obj1, obj2]);

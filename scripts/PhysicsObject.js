@@ -20,6 +20,7 @@ class PhysicsObject {
 		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : `${this.shape.vertices.length}-sided polygon`}`;
 
 		this.overlappedObjects = [];
+		this.cache = {};
 	}
 
 	static ROTATION_CONSTANT = 2e-4;
@@ -92,37 +93,40 @@ class PhysicsObject {
 	}
 
 	intersects(physicsObject) {
+		if(this.cache.intersects) { return this.cache.intersects; }
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
-		return shape1.intersects(shape2);
+		return this.cache.intersects = shape1.intersects(shape2);
 	}
 	intersection(physicsObject) {
+		if(this.cache.intersection) { return this.cache.intersection; }
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
-			return shape1.position.add(shape2.position).divide(2);
+			return this.cache.intersection = shape1.position.add(shape2.position).divide(2);
 		}
 		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
 			const polygon = [shape1, shape2].find(s => s instanceof Polygon);
 			const intersections = Shape.circlePolygonIntersections(circle, polygon);
-			return intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
+			return this.cache.intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 		else if(shape1 instanceof Polygon && shape2 instanceof Polygon) {
 			const intersections = Shape.polygonIntersections(shape1, shape2);
-			return intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
+			return this.cache.intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 	}
 	normalVector(physicsObject) {
+		if(this.cache.normalVector) { return this.cache.normalVector; }
 		const intersection = this.intersection(physicsObject);
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
-			return shape1.position.subtract(shape2.position).normalize();
+			return this.cache.normalVector = shape1.position.subtract(shape2.position).normalize();
 		}
 		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
-			return intersection.subtract(circle.position).normalize();
+			return this.cache.normalVector = intersection.subtract(circle.position).normalize();
 		}
 		else {
 			const polygon = (
@@ -133,9 +137,8 @@ class PhysicsObject {
 			const edge = polygon.closestEdge(intersection);
 			const result = edge.endpoint1.subtract(edge.endpoint2);
 			result.angle += 90;
-			return result.normalize();
+			return this.cache.normalVector = result.normalize();
 		}
-		return [intersection, normalVector];
 	}
 	tangentialVector(physicsObject) {
 		const normalVector = this.normalVector(physicsObject);
@@ -151,6 +154,7 @@ class PhysicsObject {
 		return point.subtract(originalPoint).add(this.velocity);
 	}
 	movingToward(physicsObject) {
+		if(this.cache.movingToward != null) { return this.cache.movingToward; }
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject);
 		const p1 = this.collisionForcePoint(physicsObject);
@@ -159,11 +163,11 @@ class PhysicsObject {
 		const v2 = physicsObject.velocityOfPoint(p2).scalarProjection(normalVector);
 		if(intersection.add(normalVector).distanceFrom(this.position) < intersection.distanceFrom(this.position)) {
 			// `normalVector` is pointing toward `this`
-			return v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY;
+			return this.cache.movingToward = (v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY);
 		}
 		else {
 			// `normalVector` is pointing toward `physicsObject`
-			return v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY;
+			return this.cache.movingToward = (v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY);
 		}
 	}
 	shouldCollide(physicsObject) {
@@ -203,6 +207,7 @@ class PhysicsObject {
 		});
 	}
 	velocityAfterCollision(physicsObject) {
+		if(this.cache.velocityAfterCollision) { return this.cache.velocityAfterCollision; }
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject);
 		const forcePoint1 = this.collisionForcePoint(physicsObject);
@@ -239,9 +244,10 @@ class PhysicsObject {
 				resultVelocity = Math.abs(resultVelocity);
 			}
 		}
-		return resultVelocity;
+		return this.cache.velocityAfterCollision = resultVelocity;
 	}
 	collisionForce(physicsObject) {
+		if(this.cache.collisionForce) { return this.cache.collisionForce; }
 		if(this.immovable) {
 			return physicsObject.collisionForce(this).multiply(-1);
 		}
@@ -250,13 +256,14 @@ class PhysicsObject {
 		const forcePoint = this.collisionForcePoint(physicsObject);
 		const resultVelocity = this.velocityAfterCollision(physicsObject);
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
-		return normalVector.multiply(magnitude);
+		return this.cache.collisionForce = normalVector.multiply(magnitude);
 	}
 	collisionForcePoint(physicsObject) {
+		if(this.cache.collisionForcePoint) { return this.cache.collisionForcePoint; }
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject);
 		if(this.shape instanceof Circle) {
-			return (
+			return this.cache.collisionForcePoint = (
 				this.intersection(physicsObject).subtract(this.position)
 				.normalize()
 				.multiply(this.shape.radius)
@@ -272,11 +279,11 @@ class PhysicsObject {
 				!(new Segment(shape.vertices[i], physicsObject.position).intersects(tangentialLine))
 			);
 			if(vertices.length === 0) {
-				return this.intersection(physicsObject);
+				return this.cache.collisionForcePoint = this.intersection(physicsObject);
 			}
 			else {
 				const weights = vertices.map(v => tangentialLine.distanceFrom(v));
-				return utils.weightedVectorAverage(vertices, weights);
+				return this.cache.collisionForcePoint = utils.weightedVectorAverage(vertices, weights);
 			}
 		}
 	}
