@@ -272,6 +272,42 @@ const scenarios = [
 				})
 			], 0.1);
 		}
+	},
+	{
+		name: "dominoes",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
+			const FLOOR_HEIGHT = 100;
+			const world = new PhysicsWorld([
+				new PhysicsObject({
+					shape: Polygon.rectangle(width, FLOOR_HEIGHT),
+					position: new Vector(width / 2, height - (FLOOR_HEIGHT / 2)),
+					name: "floor",
+					immovable: true
+				})
+			], 0.1);
+			const NUM_DOMINOES = 7;
+			const LEFT_DOMINO_X = 100;
+			const RIGHT_DOMINO_X = width - 100;
+			const DOMINO_WIDTH = 20;
+			const DOMINO_HEIGHT = 100;
+			for(let i = 0; i < NUM_DOMINOES; i ++) {
+				world.objects.push(new PhysicsObject({
+					shape: Polygon.rectangle(DOMINO_WIDTH, DOMINO_HEIGHT),
+					position: new Vector(
+						LEFT_DOMINO_X + (RIGHT_DOMINO_X - LEFT_DOMINO_X) * (i / (NUM_DOMINOES - 1)),
+						height - FLOOR_HEIGHT - (DOMINO_HEIGHT / 2)
+					),
+					name: `domino #${i}`
+				}));
+			}
+			world.objects.push(new PhysicsObject({
+				shape: new Circle(0, 0, 20),
+				position: new Vector(0, height - FLOOR_HEIGHT - (DOMINO_HEIGHT * 9/8)),
+				velocity: new Vector(10, 0),
+				name: "ball"
+			}));
+			return world;
+		}
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);
