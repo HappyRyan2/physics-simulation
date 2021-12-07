@@ -274,6 +274,41 @@ const scenarios = [
 		}
 	},
 	{
+		name: "rolling-objects-with-friction",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
+			const FLOOR_HEIGHT = 100;
+			const BALL_RADIUS = 50;
+			const FALL_HEIGHT = BALL_RADIUS * 3.5;
+			const HORIZONTAL_VELOCITY = 2;
+			return new PhysicsWorld([
+				new PhysicsObject({
+					shape: Polygon.rectangle(width, FLOOR_HEIGHT),
+					position: new Vector(width / 2, height - (FLOOR_HEIGHT / 2)),
+					name: "floor",
+					immovable: true
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, BALL_RADIUS),
+					position: new Vector(100, height - FLOOR_HEIGHT - FALL_HEIGHT),
+					velocity: new Vector(HORIZONTAL_VELOCITY, 0),
+					name: "rolling-ball"
+				}),
+				new PhysicsObject({
+					shape: Polygon.rectangle(width, FLOOR_HEIGHT),
+					position: new Vector(width / 2, height / 2 - (FLOOR_HEIGHT / 2)),
+					name: "upper-floor",
+					immovable: true
+				}),
+				new PhysicsObject({
+					shape: Polygon.rectangle(BALL_RADIUS * 2, BALL_RADIUS * 2),
+					position: new Vector(100, height / 2 - FLOOR_HEIGHT - FALL_HEIGHT),
+					velocity: new Vector(HORIZONTAL_VELOCITY, 0),
+					name: "sliding-square"
+				})
+			], 0.1);
+		}
+	},
+	{
 		name: "dominoes",
 		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			const FLOOR_HEIGHT = 100;
