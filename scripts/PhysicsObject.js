@@ -113,7 +113,8 @@ class PhysicsObject {
 			return intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 	}
-	normalVector(physicsObject, intersection = this.intersection(physicsObject)) {
+	normalVector(physicsObject) {
+		const intersection = this.intersection(physicsObject);
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
@@ -136,7 +137,8 @@ class PhysicsObject {
 		}
 		return [intersection, normalVector];
 	}
-	tangentialVector(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject, intersection)) {
+	tangentialVector(physicsObject) {
+		const normalVector = this.normalVector(physicsObject);
 		return normalVector.rotateAbout(0, 0, 90);
 	}
 
@@ -148,10 +150,11 @@ class PhysicsObject {
 		point = point.add(this.position);
 		return point.subtract(originalPoint).add(this.velocity);
 	}
-	movingToward(physicsObject, normalVector = this.normalVector(physicsObject)) {
+	movingToward(physicsObject) {
 		const intersection = this.intersection(physicsObject);
-		const p1 = this.collisionForcePoint(physicsObject, normalVector, intersection);
-		const p2 = physicsObject.collisionForcePoint(this, normalVector, intersection);
+		const normalVector = this.normalVector(physicsObject);
+		const p1 = this.collisionForcePoint(physicsObject);
+		const p2 = physicsObject.collisionForcePoint(this);
 		const v1 = this.velocityOfPoint(p1).scalarProjection(normalVector);
 		const v2 = physicsObject.velocityOfPoint(p2).scalarProjection(normalVector);
 		if(intersection.add(normalVector).distanceFrom(this.position) < intersection.distanceFrom(this.position)) {
@@ -163,8 +166,8 @@ class PhysicsObject {
 			return v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY;
 		}
 	}
-	shouldCollide(physicsObject, intersects = this.intersects(physicsObject)) {
-		if(!intersects) { return false; }
+	shouldCollide(physicsObject) {
+		if(!this.intersects(physicsObject)) { return false; }
 		if(this.overlappedObjects.includes(physicsObject)) {
 			return this.movingToward(physicsObject) || physicsObject.movingToward(this);
 		}
@@ -199,7 +202,11 @@ class PhysicsObject {
 			return Math.dist(finalVelocity, obj.velocityOfPoint(point).scalarProjection(normalVector));
 		});
 	}
-	velocityAfterCollision(physicsObject, intersection = this.intersection(physicsObject), normalVector = this.normalVector(physicsObject), forcePoint1 = this.collisionForcePoint(physicsObject), forcePoint2 = physicsObject.collisionForcePoint(this)) {
+	velocityAfterCollision(physicsObject) {
+		const intersection = this.intersection(physicsObject);
+		const normalVector = this.normalVector(physicsObject);
+		const forcePoint1 = this.collisionForcePoint(physicsObject);
+		const forcePoint2 = physicsObject.collisionForcePoint(this);
 		const restitutionCoef = (this.elasticity + physicsObject.elasticity) / 2;
 		const LARGE_NUMBER = 1e6;
 		let resultVelocity = PhysicsObject.velocityAfterCollision(
@@ -239,13 +246,15 @@ class PhysicsObject {
 			return physicsObject.collisionForce(this).multiply(-1);
 		}
 		const intersection = this.intersection(physicsObject);
-		const normalVector = this.normalVector(physicsObject, intersection);
-		const forcePoint = this.collisionForcePoint(physicsObject, normalVector, intersection);
-		const resultVelocity = this.velocityAfterCollision(physicsObject, intersection, normalVector, forcePoint);
+		const normalVector = this.normalVector(physicsObject);
+		const forcePoint = this.collisionForcePoint(physicsObject);
+		const resultVelocity = this.velocityAfterCollision(physicsObject);
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
 		return normalVector.multiply(magnitude);
 	}
-	collisionForcePoint(physicsObject, normalVector = this.normalVector(physicsObject), intersection = this.intersection(physicsObject)) {
+	collisionForcePoint(physicsObject) {
+		const intersection = this.intersection(physicsObject);
+		const normalVector = this.normalVector(physicsObject);
 		if(this.shape instanceof Circle) {
 			return (
 				this.intersection(physicsObject).subtract(this.position)
@@ -271,8 +280,8 @@ class PhysicsObject {
 			}
 		}
 	}
-	checkForCollisions(physicsObject, intersects = this.intersects(physicsObject)) {
-		if(this.shouldCollide(physicsObject, intersects)) {
+	checkForCollisions(physicsObject) {
+		if(this.shouldCollide(physicsObject)) {
 			const force = this.collisionForce(physicsObject);
 			const force2 = physicsObject.collisionForce(this);
 			const point1 = this.collisionForcePoint(physicsObject);
@@ -580,7 +589,7 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			position: new Vector(1, 1),
 			name: "bottom-right-circle"
 		});
-		const normalVector = circle1.normalVector(circle2, new Vector(0, 0));
+		const normalVector = circle1.normalVector(circle2);
 		expect(normalVector.angle).toEqual(135); // 135 / -45
 	},
 	"returns the correct result for a circle and a polygon": () => {
@@ -604,7 +613,7 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3),
 			name: "bottom-rightsquare"
 		});
-		const normalVector = polygon1.normalVector(polygon2, new Vector(4, 0));
+		const normalVector = polygon1.normalVector(polygon2);
 		expect(normalVector.angle).toEqual(180); // 0 / 180 / -180
 	}
 });
@@ -647,14 +656,11 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			name: "right-circle-moving-left",
 			elasticity: 0.4
 		});
-		const intersection = new Vector(0, 0);
-		const normalVector = new Vector(1, 0);
-		const forcePoint = new Vector(0, 0);
 
-		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
-		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
-		expect(finalVelocity1).toEqual(-0.5);
-		expect(finalVelocity2).toEqual(0.5);
+		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
+		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
+		expect(finalVelocity1).toEqual(new Vector(-0.5, 0));
+		expect(finalVelocity2).toEqual(new Vector(0.5, 0));
 	},
 	"works when the objects are already moving away from each other but not quickly enough": () => {
 		const obj1 = new PhysicsObject({
@@ -671,14 +677,11 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			name: "right-circle-moving-right",
 			elasticity: 0
 		});
-		const intersection = new Vector(0, 0);
-		const normalVector = new Vector(1, 0);
-		const forcePoint = new Vector(0, 0);
 
-		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
-		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
-		expect(finalVelocity1).toEqual(-PhysicsObject.MIN_COLLISION_VELOCITY / 2);
-		expect(finalVelocity2).toEqual(PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
+		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
+		expect(finalVelocity1).toEqual(new Vector(-PhysicsObject.MIN_COLLISION_VELOCITY / 2, 0));
+		expect(finalVelocity2).toEqual(new Vector(PhysicsObject.MIN_COLLISION_VELOCITY / 2, 0));
 	},
 	"works when the object's final velocities are nonzero but less than the minimum collision velocity": () => {
 		const obj1 = new PhysicsObject({
@@ -699,10 +702,10 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 		const normalVector = new Vector(1, 0);
 		const forcePoint = new Vector(0, 0);
 
-		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
-		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
-		expect(finalVelocity1).toEqual(-PhysicsObject.MIN_COLLISION_VELOCITY / 2);
-		expect(finalVelocity2).toEqual(PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
+		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
+		expect(finalVelocity1).toEqual(new Vector(-PhysicsObject.MIN_COLLISION_VELOCITY / 2, 0));
+		expect(finalVelocity2).toEqual(new Vector(PhysicsObject.MIN_COLLISION_VELOCITY / 2, 0));
 	},
 	"works when the objects would have zero velocity after colliding": () => {
 		const obj1 = new PhysicsObject({
@@ -723,10 +726,10 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 		const normalVector = new Vector(1, 0);
 		const forcePoint = new Vector(0, 0);
 
-		const finalVelocity1 = obj1.velocityAfterCollision(obj2, intersection, normalVector, forcePoint, forcePoint);
-		const finalVelocity2 = obj2.velocityAfterCollision(obj1, intersection, normalVector, forcePoint, forcePoint);
-		expect(finalVelocity1).toEqual(-PhysicsObject.MIN_COLLISION_VELOCITY / 2);
-		expect(finalVelocity2).toEqual(PhysicsObject.MIN_COLLISION_VELOCITY / 2);
+		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
+		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
+		expect(finalVelocity1).toEqual(new Vector(-PhysicsObject.MIN_COLLISION_VELOCITY / 2, 0));
+		expect(finalVelocity2).toEqual(new Vector(PhysicsObject.MIN_COLLISION_VELOCITY / 2, 0));
 	}
 });
 testing.addUnit("PhysicsObject.collisionForcePoint()", {
