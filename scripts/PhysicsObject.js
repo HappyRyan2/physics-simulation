@@ -49,6 +49,10 @@ class PhysicsObject {
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
 		this.shape.display(c, !this.selected);
+		if(this.shape instanceof Circle) {
+			c.strokeLine(-this.shape.radius, 0, this.shape.radius, 0);
+			c.strokeLine(0, -this.shape.radius, 0, this.shape.radius);
+		}
 	}
 	displayVelocity(c) {
 		const VELOCITY_ARROW_COLOR = "rgb(0, 158, 250)";
