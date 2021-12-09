@@ -29,3 +29,13 @@
 		console.warn(`${numWithoutTests} scenarios are untested.`);
 	}
 }) ();
+
+const updateScenarioTest = (scenarioName, numFrames) => {
+	const world = findScenario(scenarioName).world();
+	numFrames ??= JSON.parse(SCENARIO_TEST_DATA[scenarioName]).history.length;
+	world.beginRecording();
+	for(let i = 0; i < numFrames; i ++) {
+		world.update();
+	}
+	return world.historyString();
+};
