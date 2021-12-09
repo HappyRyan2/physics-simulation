@@ -329,6 +329,12 @@ class PhysicsObject {
 	isMouseHovered(io = app.canvasIO) {
 		return this.transformedShape().containsPoint(io.mouse);
 	}
+
+	translate() {
+		const result = new PhysicsObject(this);
+		result.position = result.position.add(...arguments);
+		return result;
+	}
 }
 
 testing.addUnit("PhysicsObject.intersects()", {
