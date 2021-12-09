@@ -33,7 +33,7 @@ class Segment extends Shape {
 		return result;
 	}
 
-	distanceFrom(point) {
+	distanceFrom(point, tolerance = 1e-10) {
 		if(this.endpoint1.x === this.endpoint2.x) {
 			if(
 				Math.min(this.endpoint1.y, this.endpoint2.y) <= point.y &&
@@ -69,8 +69,8 @@ class Segment extends Shape {
 			new Line(point.x, point.y, point.x + 1, point.y + perpendicularSlope)
 		);
 		if(
-			(Math.min(this.endpoint1.x, this.endpoint2.x) <= intersection.x && intersection.x <= Math.max(this.endpoint1.x, this.endpoint2.x)) &&
-			(Math.min(this.endpoint1.y, this.endpoint2.y) <= intersection.y && intersection.y <= Math.max(this.endpoint1.y, this.endpoint2.y))
+			(Math.min(this.endpoint1.x, this.endpoint2.x) - intersection.x <= tolerance && intersection.x - Math.max(this.endpoint1.x, this.endpoint2.x) <= tolerance) &&
+			(Math.min(this.endpoint1.y, this.endpoint2.y) - intersection.y <= tolerance && intersection.y - Math.max(this.endpoint1.y, this.endpoint2.y) <= tolerance)
 		) {
 			return intersection.subtract(point).magnitude;
 		}
