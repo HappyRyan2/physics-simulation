@@ -14,6 +14,7 @@ class PhysicsObject {
 		this.antigravity = properties.antigravity ?? false;
 		this.immovable = properties.immovable ?? false;
 		this.selected = properties.selected ?? false;
+		this.coefficientOfFriction = properties.coefficientOfFriction ?? 0.25;
 		if(!properties.name) {
 			console.warn(`No name provided for PhysicsObject.`);
 		}
@@ -299,7 +300,26 @@ class PhysicsObject {
 			const point2 = physicsObject.collisionForcePoint(this);
 			this.applyForce(force, point1);
 			physicsObject.applyForce(force2, point2);
+
+			const friction1 = this.frictionForce(physicsObject);
+			const friction2 = physicsObject.frictionForce(this);
+			this.applyForce(friction1, point1);
+			physicsObject.applyForce(friction2, point2);
 		}
+	}
+
+	frictionForce(physicsObject) {
+		const tangentialVector = this.tangentialVector(physicsObject);
+		const point = this.collisionForcePoint(physicsObject);
+		const velocity1 = this.velocityOfPoint(point).scalarProjection(tangentialVector);
+		const velocity2 = physicsObject.velocityOfPoint(point).scalarProjection(tangentialVector);
+		const relativeVelocity = velocity1 - velocity2;
+		const maxForce = PhysicsObject.collisionForceFromVelocity(this, tangentialVector, point, velocity2);
+		const magnitude = Math.min(
+			Math.abs(physicsObject.coefficientOfFriction * this.collisionForce(physicsObject).magnitude),
+			Math.abs(maxForce)
+		) * -Math.sign(relativeVelocity);
+		return tangentialVector.multiply(magnitude);
 	}
 
 	boundingBox() {
