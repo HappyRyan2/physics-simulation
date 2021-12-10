@@ -218,21 +218,16 @@ class PhysicsObject {
 		const forcePoint1 = this.collisionForcePoint(physicsObject);
 		const forcePoint2 = physicsObject.collisionForcePoint(this);
 		const restitutionCoef = (this.elasticity + physicsObject.elasticity) / 2;
-		const LARGE_NUMBER = 1e6;
-		let resultVelocity = PhysicsObject.velocityAfterCollision(
-			this.velocityOfPoint(forcePoint1).scalarProjection(normalVector),
-			physicsObject.velocityOfPoint(forcePoint2).scalarProjection(normalVector),
-			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
-			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
-			restitutionCoef
-		);
-		let resultVelocity2 = PhysicsObject.velocityAfterCollision(
-			physicsObject.velocityOfPoint(forcePoint2).scalarProjection(normalVector),
-			this.velocityOfPoint(forcePoint1).scalarProjection(normalVector),
-			physicsObject.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : physicsObject.inertialMass,
-			this.immovable ? Math.max(this.inertialMass, physicsObject.inertialMass) * LARGE_NUMBER : this.inertialMass,
-			restitutionCoef
-		);
+		const velocity1 = this.velocityOfPoint(forcePoint1).scalarProjection(normalVector);
+		const velocity2 = physicsObject.velocityOfPoint(forcePoint2).scalarProjection(normalVector);
+
+		if(this.immovable && !physicsObject.immovable) { return 0; }
+		else if(!this.immovable && physicsObject.immovable) {
+			return velocity2 + restitutionCoef * (velocity2 - velocity1);
+		}
+
+		let resultVelocity = PhysicsObject.velocityAfterCollision(velocity1, velocity2, this.inertialMass, physicsObject.inertialMass, restitutionCoef);
+		let resultVelocity2 = PhysicsObject.velocityAfterCollision(velocity2, velocity1, this.inertialMass, physicsObject.inertialMass, restitutionCoef);
 		const velocityDifference = resultVelocity - resultVelocity2;
 		if(Math.abs(velocityDifference) < PhysicsObject.MIN_COLLISION_VELOCITY) {
 			if(velocityDifference === 0) {
