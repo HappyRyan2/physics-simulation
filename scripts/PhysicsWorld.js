@@ -54,7 +54,7 @@ class PhysicsWorld {
 				}
 			}
 		}
-		return collisions;
+		return collisions.group(([a, b]) => !a.immovable && !b.immovable);
 	}
 	applyCollisions(collisions = this.collisions()) {
 		this.collisionInfo = [];
@@ -84,6 +84,8 @@ class PhysicsWorld {
 				}
 			}
 			obj1.checkForCollisions(obj2);
+			obj1.updateVelocity();
+			obj2.updateVelocity();
 		}
 		for(const obj of this.objects) {
 			obj.overlappedObjects = [];
