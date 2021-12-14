@@ -1,7 +1,19 @@
 class Polygon extends Shape {
 	constructor() {
 		super();
-		if([...arguments].every(v => typeof v === "number")) {
+		if(arguments[0] instanceof Polygon) {
+			this.vertices = arguments[0].vertices.map(({ x, y }) => new Vector(x, y));
+		}
+		else if(arguments[0] instanceof Rectangle) {
+			const [rectangle] = arguments;
+			this.vertices = [
+				new Vector(rectangle.left, rectangle.top),
+				new Vector(rectangle.right, rectangle.top),
+				new Vector(rectangle.right, rectangle.bottom),
+				new Vector(rectangle.left, rectangle.bottom)
+			];
+		}
+		else if([...arguments].every(v => typeof v === "number")) {
 			this.vertices = [];
 			for(let i = 0; i < arguments.length; i += 2) {
 				this.vertices[i / 2] = new Vector(arguments[i], arguments[i + 1]);

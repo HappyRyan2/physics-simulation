@@ -48,6 +48,17 @@ class Rectangle {
 	containsPoint(point) {
 		return point.x >= this.x && point.x <= this.x + this.width && point.y >= this.y && point.y <= this.y + this.height;
 	}
+
+	display(c, outlineOnly = false) {
+		c.fillRect(this.x, this.y, this.width, this.height);
+	}
+
+	translate(vector) {
+		if(!(arguments[0] instanceof Vector)) {
+			return this.translate(new Vector(...arguments));
+		}
+		return new Rectangle(this.x + vector.x, this.y + vector.y, this.width, this.height);
+	}
 }
 
 

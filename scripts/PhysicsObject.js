@@ -93,6 +93,9 @@ class PhysicsObject {
 	}
 
 	transformedShape() {
+		if(this.shape instanceof Rectangle) {
+			return this.shape.translate(this.position);
+		}
 		const TO_DEGREES = 180 / Math.PI;
 		return this.shape.rotate(-this.rotation * TO_DEGREES).translate(this.position);
 	}
@@ -107,17 +110,19 @@ class PhysicsObject {
 		if(this.cache.intersection) { return this.cache.intersection; }
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
-		if(shape1 instanceof Circle && shape2 instanceof Circle) {
+		const isPolygon1 = (shape1 instanceof Polygon || shape1 instanceof Rectangle);
+		const isPolygon2 = (shape2 instanceof Polygon || shape2 instanceof Rectangle);
+		if(!isPolygon1 && !isPolygon2) {
 			return this.cache.intersection = shape1.position.add(shape2.position).divide(2);
 		}
-		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
+		else if(isPolygon1 !== isPolygon2) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
-			const polygon = [shape1, shape2].find(s => s instanceof Polygon);
+			const polygon = new Polygon([shape1, shape2].find(s => s instanceof Polygon || s instanceof Rectangle));
 			const intersections = Shape.circlePolygonIntersections(circle, polygon);
 			return this.cache.intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
-		else if(shape1 instanceof Polygon && shape2 instanceof Polygon) {
-			const intersections = Shape.polygonIntersections(shape1, shape2);
+		else if(isPolygon1 && isPolygon2) {
+			const intersections = Shape.polygonIntersections(new Polygon(shape1), new Polygon(shape2));
 			return this.cache.intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 	}
@@ -126,17 +131,20 @@ class PhysicsObject {
 		const intersection = this.intersection(physicsObject);
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
-		if(shape1 instanceof Circle && shape2 instanceof Circle) {
+		const isPolygon1 = (shape1 instanceof Polygon || shape1 instanceof Rectangle);
+		const isPolygon2 = (shape2 instanceof Polygon || shape2 instanceof Rectangle);
+		if(!isPolygon1 && !isPolygon2) {
 			return this.cache.normalVector = shape1.position.subtract(shape2.position).normalize();
 		}
-		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
+		else if(isPolygon1 !== isPolygon2) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
 			return this.cache.normalVector = intersection.subtract(circle.position).normalize();
 		}
 		else {
 			const polygon = (
 				[shape1, shape2]
-				.filter(v => v instanceof Polygon)
+				.filter(v => v instanceof Polygon || v instanceof Rectangle)
+				.map(shape => new Polygon(shape))
 				.max(poly => poly.vertices.min(vertex => vertex.subtract(intersection).magnitude, null, "value"))
 			);
 			const edge = polygon.closestEdge(intersection);
@@ -270,10 +278,10 @@ class PhysicsObject {
 				.add(this.position)
 			);
 		}
-		else if(this.shape instanceof Polygon) {
+		else if(this.shape instanceof Polygon || this.shape instanceof Rectangle) {
 			const tangentialVector = normalVector.rotateAbout(0, 0, 90);
 			const tangentialLine = new Line(intersection, intersection.add(tangentialVector));
-			const shape = this.transformedShape();
+			const shape = new Polygon(this.transformedShape());
 			const vertices = shape.vertices.filter((v, i) =>
 				physicsObject.transformedShape().containsPoint(shape.vertices[i]) &&
 				!(new Segment(shape.vertices[i], physicsObject.position).intersects(tangentialLine))

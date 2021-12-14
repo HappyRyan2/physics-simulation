@@ -12,6 +12,23 @@ const scenarios = [
 		}
 	},
 	{
+		name: "rectangle-collision",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				shape: new Rectangle(-50, -50, 100, 100),
+				position: new Vector(width * 1/4, height * 1/2),
+				velocity: new Vector(2, 0),
+				name: "left-rectangle-moving-right"
+			}),
+			new PhysicsObject({
+				shape: new Rectangle(-50, -50, 100, 100),
+				position: new Vector(width * 3/4, height * 1/2),
+				velocity: new Vector(-2, 0),
+				name: "right-rectangle-moving-left"
+			})
+		])
+	},
+	{
 		name: "ball-collisions-different-elasticities",
 		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
 			return new PhysicsWorld([
