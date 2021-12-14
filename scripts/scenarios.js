@@ -343,6 +343,79 @@ const scenarios = [
 			}));
 			return world;
 		}
+	},
+	{
+		name: "heavy-block-on-light-block",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
+			const FLOOR_HEIGHT = 100;
+			const world = new PhysicsWorld([
+				new PhysicsObject({
+					shape: Polygon.rectangle(width, FLOOR_HEIGHT),
+					position: new Vector(width / 2, height - (FLOOR_HEIGHT / 2)),
+					immovable: true,
+					name: "floor"
+				}),
+				new PhysicsObject({
+					shape: Polygon.rectangle(100, 20),
+					position: new Vector(width / 2, height - FLOOR_HEIGHT - 10),
+					name: "light-block",
+					selected: true
+				}),
+				new PhysicsObject({
+					shape: Polygon.rectangle(200, 200),
+					position: new Vector(width / 2, height - FLOOR_HEIGHT - 120 - 300),
+					mass: 100,
+					name: "heavy-block"
+				})
+			], 0.1);
+			return world;
+		}
+	},
+	{
+		name: "tower-falls-over",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => {
+			const FLOOR_HEIGHT = 100;
+			const world = new PhysicsWorld([
+				new PhysicsObject({
+					shape: Polygon.rectangle(width, FLOOR_HEIGHT),
+					position: new Vector(width / 2, height - (FLOOR_HEIGHT / 2)),
+					immovable: true,
+					name: "floor"
+				}),
+				new PhysicsObject({
+					shape: new Circle(0, 0, 20),
+					position: new Vector(0, height * 5/8),
+					mass: 500,
+					velocity: new Vector(7, 0),
+					elasticity: 1,
+					name: "ball"
+				})
+			], 0.1);
+			const BLOCK_SIZE = 20;
+			const NUM_LAYERS = 3;
+			for(let i = 0; i < NUM_LAYERS; i ++) {
+				const y = height - FLOOR_HEIGHT - i * BLOCK_SIZE * 4;
+				const x = width / 2;
+				world.objects.push(
+					new PhysicsObject({
+						shape: Polygon.rectangle(BLOCK_SIZE, BLOCK_SIZE * 3),
+						position: new Vector(x - BLOCK_SIZE * 1.5, y - BLOCK_SIZE * 1.5),
+						name: `left-block-${i}`
+					}),
+					new PhysicsObject({
+						shape: Polygon.rectangle(BLOCK_SIZE, BLOCK_SIZE * 3),
+						position: new Vector(x + BLOCK_SIZE * 1.5, y - BLOCK_SIZE * 1.5),
+						name: `right-block-${i}`
+					}),
+					new PhysicsObject({
+						shape: Polygon.rectangle(BLOCK_SIZE * 5, BLOCK_SIZE),
+						position: new Vector(x, y - BLOCK_SIZE * 3.5),
+						name: `horizontal-block-${i}`
+					})
+				);
+			}
+			return world;
+		}
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);
