@@ -18,7 +18,7 @@ class PhysicsObject {
 		if(!properties.name) {
 			console.warn(`No name provided for PhysicsObject.`);
 		}
-		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : `${this.shape.vertices.length}-sided polygon`}`;
+		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : this.shape instanceof Rectangle ? "rectangle" : `${this.shape.vertices.length}-sided polygon`}`;
 
 		this.overlappedObjects = [];
 		this.cache = {};
