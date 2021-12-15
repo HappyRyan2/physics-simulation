@@ -3,7 +3,9 @@ class PhysicsWorld {
 		BREAK_ON_COLLISION: false,
 		PAUSE_ON_COLLISION: false,
 		DISPLAY_COLLISION_INFO: false,
-		DISPLAY_VELOCITIES: false
+		DISPLAY_VELOCITIES: false,
+
+		WARN_UNNAMED_OBJECT: false
 	};
 
 	constructor(objects, gravitationalAcceleration) {

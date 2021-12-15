@@ -15,7 +15,7 @@ class PhysicsObject {
 		this.immovable = properties.immovable ?? false;
 		this.selected = properties.selected ?? false;
 		this.coefficientOfFriction = properties.coefficientOfFriction ?? 0.25;
-		if(!properties.name) {
+		if(!properties.name && PhysicsWorld.DEBUG_SETTINGS.WARN_UNNAMED_OBJECT) {
 			console.warn(`No name provided for PhysicsObject.`);
 		}
 		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : this.shape instanceof Rectangle ? "rectangle" : `${this.shape.vertices.length}-sided polygon`}`;
