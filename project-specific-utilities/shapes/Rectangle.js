@@ -40,10 +40,16 @@ class Rectangle {
 	}
 
 	intersects(rectangle, tolerance = 1e-10) {
-		return (
-			this.x + this.width >= rectangle.x - tolerance && this.x <= rectangle.x + rectangle.width + tolerance &&
-			this.y + this.height >= rectangle.y - tolerance && this.y <= rectangle.y + rectangle.height + tolerance
-		);
+		if(rectangle instanceof Rectangle) {
+			return (
+				this.x + this.width >= rectangle.x - tolerance && this.x <= rectangle.x + rectangle.width + tolerance &&
+				this.y + this.height >= rectangle.y - tolerance && this.y <= rectangle.y + rectangle.height + tolerance
+			);
+		}
+		else {
+			const [shape] = arguments;
+			return new Polygon(this).intersects(shape);
+		}
 	}
 	containsPoint(point) {
 		return point.x >= this.x && point.x <= this.x + this.width && point.y >= this.y && point.y <= this.y + this.height;

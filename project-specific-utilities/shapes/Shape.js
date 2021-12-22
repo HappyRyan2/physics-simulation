@@ -80,6 +80,9 @@ class Shape {
 		}
 	}
 	intersects(shape) {
+		if(shape instanceof Rectangle) {
+			return this.intersects(new Polygon(shape));
+		}
 		if(!(shape instanceof Shape)) {
 			throw new Error("Shape.intersects() expected a Shape object.");
 		}
