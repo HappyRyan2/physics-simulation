@@ -433,6 +433,23 @@ const scenarios = [
 			}
 			return world;
 		}
+	},
+	{
+		name: "non-rotating-rectangle",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				shape: Polygon.rectangle(20, 100).rotate(-45),
+				position: new Vector(width / 2, height / 2),
+				rotatable: false,
+				name: "slanted-falling-rectangle"
+			}),
+			new PhysicsObject({
+				shape: Polygon.rectangle(width, 100),
+				position: new Vector(width / 2, height - 50),
+				immovable: true,
+				name: "floor"
+			})
+		], 0.1)
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);

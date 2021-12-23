@@ -15,6 +15,7 @@ class PhysicsObject {
 		this.immovable = properties.immovable ?? false;
 		this.selected = properties.selected ?? false;
 		this.coefficientOfFriction = properties.coefficientOfFriction ?? 0.25;
+		this.rotatable = properties.rotatable ?? true;
 		if(!properties.name && PhysicsWorld.DEBUG_SETTINGS.WARN_UNNAMED_OBJECT) {
 			console.warn(`No name provided for PhysicsObject.`);
 		}
@@ -29,7 +30,9 @@ class PhysicsObject {
 	updateVelocity() {
 		if(!this.immovable) {
 			this.velocity = this.velocity.add(this.acceleration);
-			this.angularVelocity += this.angularAcceleration;
+			if(this.rotatable) {
+				this.angularVelocity += this.angularAcceleration;
+			}
 		}
 		this.acceleration = new Vector();
 		this.angularAcceleration = 0;
@@ -80,16 +83,17 @@ class PhysicsObject {
 	}
 
 	applyForce(force, position = this.position) {
-		if(force.magnitude === 0) { return; }
 		this.acceleration = this.acceleration.add(force.divide(this.inertialMass));
-		const TO_RADIANS = Math.PI / 180;
-		const perpendicularVector = new Vector(force);
-		perpendicularVector.angle += 90;
-		let torque = force.magnitude;
-		torque *= position.subtract(this.position).magnitude;
-		torque *= Math.sin(TO_RADIANS * (position.subtract(this.position).angle - force.angle));
-		torque *= PhysicsObject.ROTATION_CONSTANT;
-		this.angularAcceleration += (torque / this.rotationalInertia);
+		if(this.rotatable && force.magnitude !== 0) {
+			const TO_RADIANS = Math.PI / 180;
+			const perpendicularVector = new Vector(force);
+			perpendicularVector.angle += 90;
+			let torque = force.magnitude;
+			torque *= position.subtract(this.position).magnitude;
+			torque *= Math.sin(TO_RADIANS * (position.subtract(this.position).angle - force.angle));
+			torque *= PhysicsObject.ROTATION_CONSTANT;
+			this.angularAcceleration += (torque / this.rotationalInertia);
+		}
 	}
 
 	transformedShape() {
@@ -196,6 +200,11 @@ class PhysicsObject {
 		return (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
 	}
 	static collisionForceFromVelocity(physicsObject, normalVector, point, finalVelocity) {
+		if(!physicsObject.rotatable) {
+			const velocity = physicsObject.velocity.scalarProjection(normalVector);
+			return (finalVelocity - velocity) * physicsObject.inertialMass;
+		}
+
 		const { x: nX, y: nY } = normalVector;
 		const { x: pX, y: pY } = physicsObject.position;
 		const { x: vX, y: vY } = physicsObject.velocity;
