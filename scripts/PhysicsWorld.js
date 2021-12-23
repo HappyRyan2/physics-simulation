@@ -53,19 +53,25 @@ class PhysicsWorld {
 	}
 
 	collisions() {
+		const movables = this.objects.filter(o => !o.immovable);
+		const immovables = this.objects.filter(o => o.immovable);
 		const collisions = [];
-		for(let i = 0; i < this.objects.length; i ++) {
-			const obj1 = this.objects[i];
-			for(let j = i + 1; j < this.objects.length; j ++) {
-				const obj2 = this.objects[j];
-				obj1.cache = {};
-				obj2.cache = {};
-				if(obj1.intersects(obj2) && obj1.shouldCollide(obj2)) {
-					collisions.push([obj1, obj2]);
-				}
+		const checkForCollisions = (obj1, obj2) => {
+			obj1.cache = {};
+			obj2.cache = {};
+			if(obj1.intersects(obj2) && obj1.shouldCollide(obj2)) {
+				collisions.push([obj1, obj2]);
+			}
+		};
+		for(let i = 0; i < movables.length; i ++) {
+			for(let j = i + 1; j < movables.length; j ++) {
+				checkForCollisions(movables[i], movables[j]);
+			}
+			for(let j = 0; j < immovables.length; j ++) {
+				checkForCollisions(movables[i], immovables[j]);
 			}
 		}
-		return collisions.group(([a, b]) => !a.immovable && !b.immovable);
+		return collisions;
 	}
 	applyCollisions(collisions = this.collisions()) {
 		this.collisionInfo = [];
