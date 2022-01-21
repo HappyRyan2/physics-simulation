@@ -18,7 +18,7 @@ class PhysicsObject {
 		this.antigravity = properties.antigravity ?? false;
 		this.immovable = properties.immovable ?? false;
 		this.selected = properties.selected ?? false;
-		if(!properties.name) {
+		if(!properties.name && DEBUG_SETTINGS.UNNAMED_OBJECT_WARNING) {
 			console.warn(`No name provided for PhysicsObject.`);
 		}
 		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : `${this.shape.vertices.length}-sided polygon`}`;
