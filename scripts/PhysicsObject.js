@@ -1,6 +1,10 @@
 class PhysicsObject {
 	constructor(properties) {
-		this.shape = properties.shape ?? new Circle();
+		this.shape = (properties.shape ?? (
+			(typeof properties.width === "number" && typeof properties.height === "number")
+			? Polygon.rectangle(properties.width, properties.height)
+			: new Circle()
+		));
 		this.position = properties.position ?? new Vector();
 		this.velocity = properties.velocity ?? new Vector();
 		this.acceleration = properties.acceleration ?? new Vector();
