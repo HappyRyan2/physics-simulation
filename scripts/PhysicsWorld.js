@@ -1,4 +1,13 @@
 class PhysicsWorld {
+	static DEBUG_SETTINGS = {
+		BREAK_ON_COLLISION: false,
+		PAUSE_ON_COLLISION: false,
+		DISPLAY_COLLISION_INFO: false,
+		DISPLAY_VELOCITIES: false,
+
+		UNNAMED_OBJECT_WARNING: false
+	};
+
 	constructor(objects, gravitationalAcceleration) {
 		this.objects = objects ?? [];
 		this.gravitationalAcceleration = gravitationalAcceleration ?? 0;
@@ -56,14 +65,14 @@ class PhysicsWorld {
 					newIntersections.push([obj1, obj2]);
 				}
 				if(intersects && obj1.shouldCollide(obj2)) {
-					if(DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
+					if(PhysicsWorld.DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
 						this.display(app.canvasIO.ctx); // update screen with latest positions
 						debugger;
 					}
-					if(DEBUG_SETTINGS.PAUSE_ON_COLLISION && app.frameCount > 1) {
+					if(PhysicsWorld.DEBUG_SETTINGS.PAUSE_ON_COLLISION && app.frameCount > 1) {
 						this.paused = true;
 					}
-					if(DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
+					if(PhysicsWorld.DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
 						this.collisionInfo.push({
 							obj1: obj1,
 							obj2: obj2,
@@ -128,11 +137,11 @@ class PhysicsWorld {
 			c.save();
 			obj.display(c);
 			c.restore();
-			if(DEBUG_SETTINGS.DISPLAY_VELOCITIES) {
+			if(PhysicsWorld.DEBUG_SETTINGS.DISPLAY_VELOCITIES) {
 				obj.displayVelocity(c);
 			}
 		}
-		if(DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
+		if(PhysicsWorld.DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
 			for(const collision of this.collisionInfo) {
 				this.displayCollisionInfo(c, collision);
 			}
