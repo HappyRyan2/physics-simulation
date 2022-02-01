@@ -98,6 +98,16 @@ class PhysicsWorld {
 		}
 	}
 
+	updateVelocities() {
+		for(const obj of this.objects) {
+			obj.updateVelocity();
+		}
+	}
+	updatePositions() {
+		for(const obj of this.objects) {
+			obj.updatePosition();
+		}
+	}
 	update() {
 		if(this.playingRecord) {
 			for(const [i, obj] of this.objects.entries()) {
