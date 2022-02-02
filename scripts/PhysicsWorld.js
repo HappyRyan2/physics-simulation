@@ -51,48 +51,55 @@ class PhysicsWorld {
 			}
 		}
 	}
-	applyCollisions() {
-		this.collisionInfo = [];
-		const newIntersections = [];
+	collisions() {
+		const collisions = [];
 		for(let i = 0; i < this.objects.length; i ++) {
 			const obj1 = this.objects[i];
 			for(let j = i + 1; j < this.objects.length; j ++) {
 				const obj2 = this.objects[j];
 				obj1.cache = {};
 				obj2.cache = {};
-				const intersects = obj1.intersects(obj2);
-				if(intersects) {
-					newIntersections.push([obj1, obj2]);
+				if(obj1.intersects(obj2)) {
+					collisions.push([obj1, obj2]);
 				}
-				if(intersects && obj1.shouldCollide(obj2)) {
-					if(PhysicsWorld.DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
-						this.display(app.canvasIO.ctx); // update screen with latest positions
-						debugger;
-					}
-					if(PhysicsWorld.DEBUG_SETTINGS.PAUSE_ON_COLLISION && app.frameCount > 1) {
-						this.paused = true;
-					}
-					if(PhysicsWorld.DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
-						this.collisionInfo.push({
-							obj1: obj1,
-							obj2: obj2,
-							intersection: obj1.intersection(obj2),
-							normalVector: obj1.normalVector(obj2),
-							tangentialVector: obj1.tangentialVector(obj2),
-							forcePoint1: obj1.collisionForcePoint(obj2),
-							forcePoint2: obj2.collisionForcePoint(obj1),
-							force1: obj1.collisionForce(obj2),
-							force2: obj2.collisionForce(obj1)
-						});
-					}
-				}
-				obj1.checkForCollisions(obj2, intersects);
 			}
 		}
-		for(const obj of this.objects) {
-			obj.overlappedObjects = [];
+		return collisions;
+	}
+	applyCollisions(collisions = this.collisions()) {
+		const newIntersections = [];
+		for(const [obj1, obj2] of collisions) {
+			obj1.cache = {};
+			obj2.cache = {};
+			if(obj1.shouldCollide(obj2)) {
+				if(PhysicsWorld.DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
+					this.display(app.canvasIO.ctx); // update screen with latest positions
+					debugger;
+				}
+				if(PhysicsWorld.DEBUG_SETTINGS.PAUSE_ON_COLLISION && app.frameCount > 1) {
+					this.paused = true;
+				}
+				if(PhysicsWorld.DEBUG_SETTINGS.DISPLAY_COLLISION_INFO) {
+					this.collisionInfo.push({
+						obj1: obj1,
+						obj2: obj2,
+						intersection: obj1.intersection(obj2),
+						normalVector: obj1.normalVector(obj2),
+						tangentialVector: obj1.tangentialVector(obj2),
+						forcePoint1: obj1.collisionForcePoint(obj2),
+						forcePoint2: obj2.collisionForcePoint(obj1),
+						force1: obj1.collisionForce(obj2),
+						force2: obj2.collisionForce(obj1)
+					});
+				}
+				obj1.checkForCollisions(obj2);
+			}
 		}
-		for(const [obj1, obj2] of newIntersections) {
+		for(const [obj1, obj2] of collisions) {
+			obj1.overlappedObjects = [];
+			obj2.overlappedObjects = [];
+		}
+		for(const [obj1, obj2] of collisions) {
 			obj1.overlappedObjects.push(obj2);
 			obj2.overlappedObjects.push(obj1);
 		}
