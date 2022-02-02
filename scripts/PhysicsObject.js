@@ -252,6 +252,7 @@ class PhysicsObject {
 	}
 	collisionForce(physicsObject) {
 		if(this.cache.collisionForce) { return this.cache.collisionForce; }
+		if(this.immovable && physicsObject.immovable) { return new Vector(0, 0); }
 		if(this.immovable) {
 			return physicsObject.collisionForce(this).multiply(-1);
 		}
@@ -545,6 +546,22 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-1);
 		expect(collisionForce.y).toApproximatelyEqual(0);
+	},
+	"returns the zero vector when both objects are immovable": () => {
+		const obj1 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(-1, 0),
+			immovable: true,
+			name: "immovable-left-circle"
+		});
+		const obj2 = new PhysicsObject({
+			shape: new Circle(0, 0, 1),
+			position: new Vector(1, 0),
+			immovable: true,
+			name: "immovable-right-circle"
+		});
+		const collisionForce = obj1.collisionForce(obj2);
+		expect(collisionForce).toEqual(new Vector(0, 0));
 	}
 });
 testing.addUnit("PhysicsObject.intersection()", {

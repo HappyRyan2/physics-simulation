@@ -272,6 +272,25 @@ const scenarios = [
 				})
 			], 0.1);
 		}
+	},
+	{
+		name: "adjacent-immovable-objects",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width / 2 - 25, height / 2),
+				antigravity: true,
+				immovable: true,
+				name: "left-block"
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width / 2 + 25, height / 2),
+				antigravity: true,
+				immovable: true,
+				name: "right-block"
+			}),
+		], 0.1)
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);
