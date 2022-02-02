@@ -53,10 +53,20 @@ class PhysicsWorld {
 	}
 	collisions() {
 		const collisions = [];
-		for(let i = 0; i < this.objects.length; i ++) {
-			const obj1 = this.objects[i];
-			for(let j = i + 1; j < this.objects.length; j ++) {
-				const obj2 = this.objects[j];
+		const movables = this.objects.filter(o => !o.immovable);
+		const immovables = this.objects.filter(o => o.immovable);
+		for(let i = 0; i < movables.length; i ++) {
+			const obj1 = movables[i];
+			for(let j = i + 1; j < movables.length; j ++) {
+				const obj2 = movables[j];
+				obj1.cache = {};
+				obj2.cache = {};
+				if(obj1.intersects(obj2)) {
+					collisions.push([obj1, obj2]);
+				}
+			}
+			for(let j = 0; j < immovables.length; j ++) {
+				const obj2 = immovables[j];
 				obj1.cache = {};
 				obj2.cache = {};
 				if(obj1.intersects(obj2)) {
