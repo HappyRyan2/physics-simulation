@@ -262,6 +262,10 @@ class PhysicsWorld {
 		world.playingRecord = true;
 		return world;
 	}
+
+	findObject(objectName) {
+		return this.objects.find(o => o.name === objectName);
+	}
 }
 
 
