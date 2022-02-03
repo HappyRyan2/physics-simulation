@@ -291,6 +291,68 @@ const scenarios = [
 				name: "right-block"
 			}),
 		], 0.1)
+	},
+	{
+		name: "block-on-two-floors",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width / 2 - 25, height / 2),
+				antigravity: true,
+				immovable: true,
+				name: "left-immovable-block"
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width / 2 + 25, height / 2),
+				antigravity: true,
+				immovable: true,
+				name: "right-immovable-block"
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width / 2, height / 2 - 50),
+				name: "block-on-floor"
+			})
+		], 0.1)
+	},
+	{
+		name: "multi-collision-comparison",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width * 1/4, height * 3/8),
+				velocity: new Vector(0, 3),
+				elasticity: 1,
+				name: "left-moving-block"
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width * 3/4, height * 3/8),
+				velocity: new Vector(0, 3),
+				elasticity: 1,
+				name: "right-moving-block"
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width * 1/4 - 25 - 1, height * 5/8),
+				elasticity: 1,
+				name: "left-unmoving-block-1"
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width * 1/4 + 25 + 1, height * 5/8),
+				elasticity: 1,
+				name: "left-unmoving-block-2"
+			}),
+			new PhysicsObject({
+				width: 100, height: 50,
+				position: new Vector(width * 3/4, height * 5/8),
+				elasticity: 1,
+				name: "right-unmoving-block",
+				mass: 2
+			}),
+		])
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);
