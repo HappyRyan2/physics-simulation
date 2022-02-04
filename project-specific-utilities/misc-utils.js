@@ -71,3 +71,14 @@ utils.drawArrow = (c, arrow, position, positionType = "head") => {
 utils.weightedVectorAverage = (vectors, weights) => {
 	return vectors.map((v, i) => v.multiply(weights[i])).reduce((a, b) => a.add(b)).divide(weights.sum());
 };
+
+
+utils.angleDistance = (angle1, angle2) => {
+	angle1 %= 360;
+	angle2 %= 360;
+	return Math.min(
+		Math.dist(angle1, angle2),
+		Math.dist(angle1 + 360, angle2),
+		Math.dist(angle1 - 360, angle2)
+	);
+};

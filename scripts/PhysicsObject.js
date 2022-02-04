@@ -99,6 +99,21 @@ class PhysicsObject {
 		torque *= PhysicsObject.ROTATION_CONSTANT;
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
+	applyCollisionForce(force, position = this.position) {
+		/* Applies the force, but divided by the number of colliding objects, where parallel collisions are weighted more heavily than perpendicular collisions. */
+		let forceDivisor = 0;
+		for(const object of this.cache.get("collidingObjects")) {
+			const normalVector = this.normalVector(object);
+			const angleDistance = utils.angleDistance(force.angle, normalVector.angle);
+			if(angleDistance < 90) {
+				forceDivisor += Math.map(angleDistance, 0, 90, 1, 0);
+			}
+			else {
+				forceDivisor += Math.map(angleDistance, 90, 180, 0, 1);
+			}
+		}
+		this.applyForce(force.divide(forceDivisor), position);
+	}
 
 	transformedShape() {
 		const TO_DEGREES = 180 / Math.PI;
@@ -307,8 +322,8 @@ class PhysicsObject {
 			const force2 = physicsObject.collisionForce(this);
 			const point1 = this.collisionForcePoint(physicsObject);
 			const point2 = physicsObject.collisionForcePoint(this);
-			this.applyForce(force, point1);
-			physicsObject.applyForce(force2, point2);
+			this.applyCollisionForce(force, point1);
+			physicsObject.applyCollisionForce(force2, point2);
 		}
 	}
 
