@@ -23,6 +23,8 @@ class PhysicsObject {
 		}
 		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : `${this.shape.vertices.length}-sided polygon`}`;
 
+		this.listeners = [];
+
 		this.overlappedObjects = [];
 		this.cache = new Map();
 	}
@@ -99,7 +101,7 @@ class PhysicsObject {
 		torque *= PhysicsObject.ROTATION_CONSTANT;
 		this.angularAcceleration += (torque / this.rotationalInertia);
 	}
-	applyCollisionForce(force, position = this.position) {
+	applyCollisionForce(force, position = this.position, collidingObject) {
 		/* Applies the force, but divided by the number of colliding objects, where parallel collisions are weighted more heavily than perpendicular collisions. */
 		let forceDivisor = 0;
 		for(const object of this.cache.get("collidingObjects")) {
@@ -113,6 +115,10 @@ class PhysicsObject {
 			}
 		}
 		this.applyForce(force.divide(forceDivisor), position);
+		const listeners = this.listeners.filter(l => l.type === "collision");
+		for(const listener of listener) {
+			listener.callback({ collidingObject, force: force.divide(forceDivisor) });
+		}
 	}
 
 	transformedShape() {
@@ -322,8 +328,8 @@ class PhysicsObject {
 			const force2 = physicsObject.collisionForce(this);
 			const point1 = this.collisionForcePoint(physicsObject);
 			const point2 = physicsObject.collisionForcePoint(this);
-			this.applyCollisionForce(force, point1);
-			physicsObject.applyCollisionForce(force2, point2);
+			this.applyCollisionForce(force, point1, physicsObject);
+			physicsObject.applyCollisionForce(force2, point2, this);
 		}
 	}
 
@@ -333,6 +339,18 @@ class PhysicsObject {
 
 	isMouseHovered(io = app.canvasIO) {
 		return this.transformedShape().containsPoint(io.mouse);
+	}
+
+	addEventListener(type, callback) {
+		this.listeners.push({ type, callback });
+	}
+	removeEventListener(type, callback) {
+		if(callback) {
+			this.listeners = this.listeners.filter(l => l.type !== type || l.callback !== callback);
+		}
+		else {
+			this.listeners = this.listeners.filter(l => l.type !== type);
+		}
 	}
 }
 
