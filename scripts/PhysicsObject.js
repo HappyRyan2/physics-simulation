@@ -116,7 +116,7 @@ class PhysicsObject {
 		}
 		this.applyForce(force.divide(forceDivisor), position);
 		const listeners = this.listeners.filter(l => l.type === "collision");
-		for(const listener of listener) {
+		for(const listener of listeners) {
 			listener.callback({ collidingObject, force: force.divide(forceDivisor) });
 		}
 	}
