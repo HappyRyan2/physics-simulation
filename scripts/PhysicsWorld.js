@@ -67,12 +67,20 @@ class PhysicsWorld {
 				const obj2 = movables[j];
 				if(obj1.intersects(obj2)) {
 					collisions.push([obj1, obj2]);
+					if(obj1.shouldCollide(obj2)) {
+						obj1.cache.get("collidingObjects").push(obj2);
+						obj2.cache.get("collidingObjects").push(obj1);
+					}
 				}
 			}
 			for(let j = 0; j < immovables.length; j ++) {
 				const obj2 = immovables[j];
 				if(obj1.intersects(obj2)) {
 					collisions.push([obj1, obj2]);
+				}
+				if(obj1.shouldCollide(obj2)) {
+					obj1.cache.get("collidingObjects").push(obj2);
+					obj2.cache.get("collidingObjects").push(obj1);
 				}
 			}
 		}

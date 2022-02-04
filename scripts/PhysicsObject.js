@@ -33,6 +33,7 @@ class PhysicsObject {
 				this.cache.set(object, {});
 			}
 		}
+		this.cache.set("collidingObjects", []);
 	}
 
 	static ROTATION_CONSTANT = 2e-4;
