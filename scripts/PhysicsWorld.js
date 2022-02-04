@@ -43,6 +43,11 @@ class PhysicsWorld {
 			parsed.initialState.gravitationalAcceleration
 		);
 	}
+	initCaches() {
+		for(const object of this.objects) {
+			object.initCache(this.objects);
+		}
+	}
 
 	applyGravity() {
 		for(const obj of this.objects) {
@@ -52,6 +57,7 @@ class PhysicsWorld {
 		}
 	}
 	collisions() {
+		this.initCaches();
 		const collisions = [];
 		const movables = this.objects.filter(o => !o.immovable);
 		const immovables = this.objects.filter(o => o.immovable);
@@ -59,16 +65,12 @@ class PhysicsWorld {
 			const obj1 = movables[i];
 			for(let j = i + 1; j < movables.length; j ++) {
 				const obj2 = movables[j];
-				obj1.cache = {};
-				obj2.cache = {};
 				if(obj1.intersects(obj2)) {
 					collisions.push([obj1, obj2]);
 				}
 			}
 			for(let j = 0; j < immovables.length; j ++) {
 				const obj2 = immovables[j];
-				obj1.cache = {};
-				obj2.cache = {};
 				if(obj1.intersects(obj2)) {
 					collisions.push([obj1, obj2]);
 				}
@@ -79,8 +81,6 @@ class PhysicsWorld {
 	applyCollisions(collisions = this.collisions()) {
 		const newIntersections = [];
 		for(const [obj1, obj2] of collisions) {
-			obj1.cache = {};
-			obj2.cache = {};
 			if(obj1.shouldCollide(obj2)) {
 				if(PhysicsWorld.DEBUG_SETTINGS.BREAK_ON_COLLISION && app.frameCount > 1) {
 					this.display(app.canvasIO.ctx); // update screen with latest positions

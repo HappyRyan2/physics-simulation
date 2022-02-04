@@ -24,7 +24,15 @@ class PhysicsObject {
 		this.name = properties.name ?? `unnamed ${this.shape instanceof Circle ? "circle" : `${this.shape.vertices.length}-sided polygon`}`;
 
 		this.overlappedObjects = [];
-		this.cache = {};
+		this.cache = new Map();
+	}
+	initCache(objects) {
+		this.cache = new Map();
+		for(const object of objects) {
+			if(object !== this) {
+				this.cache.set(object, {});
+			}
+		}
 	}
 
 	static ROTATION_CONSTANT = 2e-4;
@@ -97,40 +105,40 @@ class PhysicsObject {
 	}
 
 	intersects(physicsObject) {
-		if(this.cache.intersects) { return this.cache.intersects; }
+		if(this.cache.get(physicsObject)?.intersects != null) { return this.cache.get(physicsObject).intersects; }
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
-		return this.cache.intersects = shape1.intersects(shape2);
+		return this.cache.get(physicsObject).intersects = shape1.intersects(shape2);
 	}
 	intersection(physicsObject) {
-		if(this.cache.intersection) { return this.cache.intersection; }
+		if(this.cache.get(physicsObject)?.intersection) { return this.cache.get(physicsObject).intersection; }
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
-			return this.cache.intersection = shape1.position.add(shape2.position).divide(2);
+			return this.cache.get(physicsObject).intersection = shape1.position.add(shape2.position).divide(2);
 		}
 		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
 			const polygon = [shape1, shape2].find(s => s instanceof Polygon);
 			const intersections = Shape.circlePolygonIntersections(circle, polygon);
-			return this.cache.intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
+			return this.cache.get(physicsObject).intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 		else if(shape1 instanceof Polygon && shape2 instanceof Polygon) {
 			const intersections = Shape.polygonIntersections(shape1, shape2);
-			return this.cache.intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
+			return this.cache.get(physicsObject).intersection = intersections.reduce((a, b) => a.add(b)).divide(intersections.length);
 		}
 	}
 	normalVector(physicsObject) {
-		if(this.cache.normalVector) { return this.cache.normalVector; }
+		if(this.cache.get(physicsObject).normalVector) { return this.cache.get(physicsObject).normalVector; }
 		const intersection = this.intersection(physicsObject);
 		const shape1 = this.transformedShape();
 		const shape2 = physicsObject.transformedShape();
 		if(shape1 instanceof Circle && shape2 instanceof Circle) {
-			return this.cache.normalVector = shape1.position.subtract(shape2.position).normalize();
+			return this.cache.get(physicsObject).normalVector = shape1.position.subtract(shape2.position).normalize();
 		}
 		else if((shape1 instanceof Circle && shape2 instanceof Polygon) || (shape1 instanceof Polygon && shape2 instanceof Circle)) {
 			const circle = [shape1, shape2].find(s => s instanceof Circle);
-			return this.cache.normalVector = intersection.subtract(circle.position).normalize();
+			return this.cache.get(physicsObject).normalVector = intersection.subtract(circle.position).normalize();
 		}
 		else {
 			const polygon = (
@@ -141,7 +149,7 @@ class PhysicsObject {
 			const edge = polygon.closestEdge(intersection);
 			const result = edge.endpoint1.subtract(edge.endpoint2);
 			result.angle += 90;
-			return this.cache.normalVector = result.normalize();
+			return this.cache.get(physicsObject).normalVector = result.normalize();
 		}
 	}
 	tangentialVector(physicsObject) {
@@ -158,7 +166,7 @@ class PhysicsObject {
 		return point.subtract(originalPoint).add(this.velocity);
 	}
 	movingToward(physicsObject) {
-		if(this.cache.movingToward != null) { return this.cache.movingToward; }
+		if(this.cache.get(physicsObject)?.movingToward != null) { return this.cache.get(physicsObject).movingToward; }
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject);
 		const p1 = this.collisionForcePoint(physicsObject);
@@ -167,11 +175,11 @@ class PhysicsObject {
 		const v2 = physicsObject.velocityOfPoint(p2).scalarProjection(normalVector);
 		if(intersection.add(normalVector).distanceFrom(this.position) < intersection.distanceFrom(this.position)) {
 			// `normalVector` is pointing toward `this`
-			return this.cache.movingToward = (v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY);
+			return this.cache.get(physicsObject).movingToward = (v1 - v2 < PhysicsObject.MIN_COLLISION_VELOCITY);
 		}
 		else {
 			// `normalVector` is pointing toward `physicsObject`
-			return this.cache.movingToward = (v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY);
+			return this.cache.get(physicsObject).movingToward = (v2 - v1 < PhysicsObject.MIN_COLLISION_VELOCITY);
 		}
 	}
 	shouldCollide(physicsObject) {
@@ -211,7 +219,7 @@ class PhysicsObject {
 		});
 	}
 	velocityAfterCollision(physicsObject) {
-		if(this.cache.velocityAfterCollision) { return this.cache.velocityAfterCollision; }
+		if(this.cache.get(physicsObject).velocityAfterCollision) { return this.cache.get(physicsObject).velocityAfterCollision; }
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject);
 		const forcePoint1 = this.collisionForcePoint(physicsObject);
@@ -248,10 +256,10 @@ class PhysicsObject {
 				resultVelocity = Math.abs(resultVelocity);
 			}
 		}
-		return this.cache.velocityAfterCollision = resultVelocity;
+		return this.cache.get(physicsObject).velocityAfterCollision = resultVelocity;
 	}
 	collisionForce(physicsObject) {
-		if(this.cache.collisionForce) { return this.cache.collisionForce; }
+		if(this.cache.get(physicsObject).collisionForce) { return this.cache.get(physicsObject).collisionForce; }
 		if(this.immovable && physicsObject.immovable) { return new Vector(0, 0); }
 		if(this.immovable) {
 			return physicsObject.collisionForce(this).multiply(-1);
@@ -261,14 +269,14 @@ class PhysicsObject {
 		const forcePoint = this.collisionForcePoint(physicsObject);
 		const resultVelocity = this.velocityAfterCollision(physicsObject);
 		const magnitude = PhysicsObject.collisionForceFromVelocity(this, normalVector, forcePoint, resultVelocity);
-		return this.cache.collisionForce = normalVector.multiply(magnitude);
+		return this.cache.get(physicsObject).collisionForce = normalVector.multiply(magnitude);
 	}
 	collisionForcePoint(physicsObject) {
-		if(this.cache.collisionForcePoint) { return this.cache.collisionForcePoint; }
+		if(this.cache.get(physicsObject).collisionForcePoint) { return this.cache.get(physicsObject).collisionForcePoint; }
 		const intersection = this.intersection(physicsObject);
 		const normalVector = this.normalVector(physicsObject);
 		if(this.shape instanceof Circle) {
-			return this.cache.collisionForcePoint = (
+			return this.cache.get(physicsObject).collisionForcePoint = (
 				this.intersection(physicsObject).subtract(this.position)
 				.normalize()
 				.multiply(this.shape.radius)
@@ -284,11 +292,11 @@ class PhysicsObject {
 				!(new Segment(shape.vertices[i], physicsObject.position).intersects(tangentialLine))
 			);
 			if(vertices.length === 0) {
-				return this.cache.collisionForcePoint = this.intersection(physicsObject);
+				return this.cache.get(physicsObject).collisionForcePoint = this.intersection(physicsObject);
 			}
 			else {
 				const weights = vertices.map(v => tangentialLine.distanceFrom(v));
-				return this.cache.collisionForcePoint = utils.weightedVectorAverage(vertices, weights);
+				return this.cache.get(physicsObject).collisionForcePoint = utils.weightedVectorAverage(vertices, weights);
 			}
 		}
 	}
@@ -322,6 +330,8 @@ testing.addUnit("PhysicsObject.intersects()", {
 			shape: new Polygon(1, -10, 1, 10, 10, 0),
 			name: "triangle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
 	},
@@ -334,6 +344,8 @@ testing.addUnit("PhysicsObject.intersects()", {
 			shape: new Polygon(1, -10, 1, 10, 10, 0),
 			name: "triangle-near-origin"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(false);
 	},
@@ -347,6 +359,8 @@ testing.addUnit("PhysicsObject.intersects()", {
 			shape: new Polygon(1, -1, -1, -1, 0, 1),
 			name: "small-triangle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
 	},
@@ -360,6 +374,8 @@ testing.addUnit("PhysicsObject.intersects()", {
 			rotation: -Math.PI / 2,
 			name: "rotated-triangle-pointing-right"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 		const intersect = obj1.intersects(obj2);
 		expect(intersect).toEqual(true);
 	}
@@ -379,6 +395,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "unmoving-circle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-1);
@@ -399,6 +417,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "right-circle-moving-left"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-2);
@@ -419,6 +439,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 0.5,
 			name: "right-circle-moving-left"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-1.5);
@@ -441,6 +463,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "right-circle-moving-left"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-30, 1e-10);
@@ -462,6 +486,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "right-circle-moving-left"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-8/3);
@@ -482,6 +508,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "bottom-right-circle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-2);
@@ -503,6 +531,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "bottom-right-circle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-8/3);
@@ -523,6 +553,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 0,
 			name: "bottom-right-circle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-1 - ((PhysicsObject.MIN_COLLISION_VELOCITY / 2) / Math.SQRT2));
@@ -542,6 +574,8 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			elasticity: 1,
 			name: "unmoving-right-circle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce.x).toApproximatelyEqual(-1);
@@ -560,6 +594,9 @@ testing.addUnit("PhysicsObject.collisionForce()", {
 			immovable: true,
 			name: "immovable-right-circle"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
+
 		const collisionForce = obj1.collisionForce(obj2);
 		expect(collisionForce).toEqual(new Vector(0, 0));
 	}
@@ -576,6 +613,9 @@ testing.addUnit("PhysicsObject.intersection()", {
 			position: new Vector(1, 1),
 			name: "bottom-right-circle"
 		});
+		circle1.initCache([circle2]);
+		circle2.initCache([circle1]);
+
 		const intersection = circle1.intersection(circle2);
 		expect(intersection).toEqual(new Vector(0, 0));
 	},
@@ -588,6 +628,9 @@ testing.addUnit("PhysicsObject.intersection()", {
 			shape: new Polygon(1, 0, 6, 5, 6, -5),
 			name: "triangle-to-right"
 		});
+		circle.initCache([polygon]);
+		polygon.initCache([circle]);
+
 		const intersection = circle.intersection(polygon);
 		expect(intersection).toEqual(new Vector(4, 0));
 	},
@@ -600,6 +643,9 @@ testing.addUnit("PhysicsObject.intersection()", {
 			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3),
 			name: "square-top-right"
 		});
+		polygon1.initCache([polygon2]);
+		polygon2.initCache([polygon1]);
+
 		const intersection = polygon1.intersection(polygon2);
 		expect(intersection.x).toApproximatelyEqual(4);
 		expect(intersection.y).toApproximatelyEqual(0);
@@ -617,6 +663,9 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			position: new Vector(1, 1),
 			name: "bottom-right-circle"
 		});
+		circle1.initCache([circle2]);
+		circle2.initCache([circle1]);
+
 		const normalVector = circle1.normalVector(circle2);
 		expect(normalVector.angle).toEqual(135); // 135 / -45
 	},
@@ -629,6 +678,8 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			shape: new Polygon(4, 0, 6, 1, 6, -1),
 			name: "triangle-to-right"
 		});
+		circle.initCache([polygon]);
+		polygon.initCache([circle]);
 		const normalVector = circle.normalVector(polygon);
 		expect(normalVector.angle).toEqual(0); // 0 / -180
 	},
@@ -641,6 +692,9 @@ testing.addUnit("PhysicsObject.normalVector()", {
 			shape: new Polygon(3, -3, 7, -3, 7, 3, 3, 3),
 			name: "bottom-rightsquare"
 		});
+		polygon1.initCache([polygon2]);
+		polygon2.initCache([polygon1]);
+
 		const normalVector = polygon1.normalVector(polygon2);
 		expect(normalVector.angle).toEqual(180); // 0 / 180 / -180
 	}
@@ -684,6 +738,8 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			name: "right-circle-moving-left",
 			elasticity: 0.4
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
 		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
@@ -705,6 +761,8 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			name: "right-circle-moving-right",
 			elasticity: 0
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
 		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
@@ -726,9 +784,8 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			name: "right-circle-moving-left",
 			elasticity: 0.01
 		});
-		const intersection = new Vector(0, 0);
-		const normalVector = new Vector(1, 0);
-		const forcePoint = new Vector(0, 0);
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
 		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
@@ -750,9 +807,8 @@ testing.addUnit("PhysicsObject.velocityAfterCollision()", {
 			name: "right-circle-moving-left",
 			elasticity: 0
 		});
-		const intersection = new Vector(0, 0);
-		const normalVector = new Vector(1, 0);
-		const forcePoint = new Vector(0, 0);
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 
 		const finalVelocity1 = obj1.normalVector(obj2).multiply(obj1.velocityAfterCollision(obj2));
 		const finalVelocity2 = obj2.normalVector(obj1).multiply(obj2.velocityAfterCollision(obj1));
@@ -770,6 +826,8 @@ testing.addUnit("PhysicsObject.collisionForcePoint()", {
 			shape: new Polygon(2, -1, -1, 2, 0, 3, 3, 0),
 			name: "top-right-rotated-rectangle"
 		});
+		circle.initCache([polygon]);
+		polygon.initCache([circle]);
 		const point = circle.collisionForcePoint(polygon);
 		expect(point.x).toApproximatelyEqual(Math.SQRT2 / 2);
 		expect(point.y).toApproximatelyEqual(Math.SQRT2 / 2);
@@ -783,6 +841,8 @@ testing.addUnit("PhysicsObject.collisionForcePoint()", {
 			shape: new Polygon(1, 1, 3, 1, 3, 3, 1, 3),
 			name: "bottom-right-square"
 		});
+		circle.initCache([polygon]);
+		polygon.initCache([circle]);
 		const point = polygon.collisionForcePoint(circle);
 		expect(point.x).toApproximatelyEqual(1);
 		expect(point.y).toApproximatelyEqual(1);
@@ -804,6 +864,8 @@ testing.addUnit("PhysicsObject collisions", {
 			elasticity: 0.5,
 			name: "right-circle-moving-left"
 		});
+		obj1.initCache([obj2]);
+		obj2.initCache([obj1]);
 		const world = new PhysicsWorld([obj1, obj2]);
 
 		for(let i = 0; i < 10; i ++) {
