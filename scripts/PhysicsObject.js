@@ -17,6 +17,7 @@ class PhysicsObject {
 		this.elasticity = properties.elasticity ?? 0.5;
 		this.antigravity = properties.antigravity ?? false;
 		this.immovable = properties.immovable ?? false;
+		this.rotatable = properties.rotatable ?? true;
 		this.selected = properties.selected ?? false;
 		if(!properties.name && PhysicsWorld.DEBUG_SETTINGS.UNNAMED_OBJECT_WARNING) {
 			console.warn(`No name provided for PhysicsObject.`);
@@ -43,7 +44,9 @@ class PhysicsObject {
 	updateVelocity() {
 		if(!this.immovable) {
 			this.velocity = this.velocity.add(this.acceleration);
-			this.angularVelocity += this.angularAcceleration;
+			if(this.rotatable) {
+				this.angularVelocity += this.angularAcceleration;
+			}
 		}
 		this.acceleration = new Vector();
 		this.angularAcceleration = 0;
@@ -217,6 +220,9 @@ class PhysicsObject {
 		return (mass1 * velocity1 + mass2 * velocity2 + mass2 * restitutionCoef * (velocity2 - velocity1)) / (mass1 + mass2);
 	}
 	static collisionForceFromVelocity(physicsObject, normalVector, point, finalVelocity) {
+		if(!physicsObject.rotatable) {
+			return physicsObject.inertialMass * (finalVelocity - physicsObject.velocity.scalarProjection(normalVector));
+		}
 		const { x: nX, y: nY } = normalVector;
 		const { x: pX, y: pY } = physicsObject.position;
 		const { x: vX, y: vY } = physicsObject.velocity;

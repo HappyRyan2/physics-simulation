@@ -353,6 +353,24 @@ const scenarios = [
 				mass: 2
 			}),
 		])
+	},
+	{
+		name: "non-rotatable-object-collision",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width * 3/8, height * 1/2),
+				velocity: new Vector(3, 0),
+				name: "left-moving-block",
+				rotatable: false
+			}),
+			new PhysicsObject({
+				width: 50, height: 50,
+				position: new Vector(width * 5/8, height * 1/2 + 25),
+				name: "right-unmoving-block",
+				rotatable: false
+			})
+		])
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);
