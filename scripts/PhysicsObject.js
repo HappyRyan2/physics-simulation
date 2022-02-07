@@ -124,6 +124,13 @@ class PhysicsObject {
 		}
 	}
 
+	applyAirResistance(dragCoefficient) {
+		const shape = this.transformedShape().rotate(-this.velocity.angle);
+		const area = shape.boundingBox().height;
+		const magnitude = area * dragCoefficient * this.velocity.magnitude ** 2;
+		this.applyForce(this.velocity.multiply(-magnitude));
+	}
+
 	transformedShape() {
 		const TO_DEGREES = 180 / Math.PI;
 		return this.shape.rotate(-this.rotation * TO_DEGREES).translate(this.position);

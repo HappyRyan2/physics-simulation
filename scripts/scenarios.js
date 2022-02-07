@@ -371,6 +371,23 @@ const scenarios = [
 				rotatable: false
 			})
 		])
+	},
+	{
+		name: "air-resistance",
+		world: (width = app.canvasIO.canvas.width, height = app.canvasIO.canvas.height) => new PhysicsWorld([
+			new PhysicsObject({
+				shape: new Polygon(-30, -10, -30, 10, 30, 0),
+				position: new Vector(width * 1/4, height * 1/4),
+				velocity: new Vector(3, 0),
+				name: "aerodynamic-triangle"
+			}),
+			new PhysicsObject({
+				shape: Polygon.rectangle(100, 100),
+				position: new Vector(width * 1/4, height * 3/4),
+				velocity: new Vector(3, 0),
+				name: "large-square"
+			})
+		], 0, 1e-4)
 	}
 ];
 const findScenario = name => scenarios.find(s => s.name === name);
