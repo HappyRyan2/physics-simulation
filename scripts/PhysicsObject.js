@@ -60,13 +60,15 @@ class PhysicsObject {
 		this.updateVelocity();
 		this.updatePosition();
 	}
-	display(c) {
-		c.strokeStyle = "black";
-		c.fillStyle = "black";
+	display(c, fillColor = "black", outlineColor = "black") {
+		c.save();
+		c.strokeStyle = outlineColor;
+		c.fillStyle = fillColor;
 		c.translate(this.position.x, this.position.y);
 		c.rotate(this.rotation);
 		c.lineWidth = 3;
 		this.shape.display(c, !this.selected);
+		c.restore();
 	}
 	displayVelocity(c) {
 		const VELOCITY_ARROW_COLOR = "rgb(0, 158, 250)";
