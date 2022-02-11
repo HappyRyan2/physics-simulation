@@ -125,6 +125,7 @@ class PhysicsObject {
 	}
 
 	applyAirResistance(dragCoefficient) {
+		if(this.velocity.magnitude === 0) { return; }
 		const shape = this.transformedShape().rotate(-this.velocity.angle);
 		const area = shape.boundingBox().height;
 		const magnitude = area * dragCoefficient * this.velocity.magnitude ** 2;
