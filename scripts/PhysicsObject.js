@@ -128,7 +128,10 @@ class PhysicsObject {
 		if(this.velocity.magnitude === 0) { return; }
 		const shape = this.transformedShape().rotate(-this.velocity.angle);
 		const area = shape.boundingBox().height;
-		const magnitude = area * dragCoefficient * this.velocity.magnitude ** 2;
+		const magnitude = Math.min(
+			area * dragCoefficient * this.velocity.magnitude ** 2,
+			this.velocity.magnitude * this.inertialMass
+		);
 		this.applyForce(this.velocity.normalize().multiply(-magnitude));
 	}
 
